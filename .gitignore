@@ -1,0 +1,12 @@
+# Build artifacts
+build/
+
+# GLFW bloat
+external/glfw/docs/
+external/glfw/examples/
+external/glfw/tests/
+external/glfw/CMake
+
+# System and IDE files
+*.save
+
