@@ -1,14 +1,35 @@
 cmake_minimum_required(VERSION 3.20)
-
 project(ProceduralVoxels)
 
-# Glad library
-add_library(glad STATIC external/glad/src/gl.c)
-target_include_directories(glad PUBLIC external/glad/include)
+# Standards
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# GLFW
+# Dependencies
+add_library(glad STATIC external/glad/src/gl.c)
+target_include_directories(glad SYSTEM PUBLIC external/glad/include)
+
 add_subdirectory(external/glfw)
 
-add_executable(ProceduralVoxels src/main.cpp)
-target_link_libraries(ProceduralVoxels PRIVATE glad glfw)
+# Project Sources
+file(GLOB_RECURSE SOURCES
+  "src/*.cpp"
+  "include/*.h"
+)
 
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Configuration
+target_include_directories(${PROJECT_NAME}
+  PRIVATE include
+  # Treat GLFW headers as SYSTEM to suppress internal warnings
+  SYSTEM PRIVATE external/glfw/include
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE glad glfw)
+
+# Compiler Warnings
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
