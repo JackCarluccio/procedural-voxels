@@ -1,7 +1,7 @@
-#include <iostream>
+#include "graphics/GraphicsCore.h"
+#include "graphics/Window.h"
 
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
+#include <iostream>
 
 int main() {
 	// Load OpenGL 4.6 Core
@@ -10,15 +10,8 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Create GLFW window
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
-	if (window == NULL) {
-		std::cerr << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-
-	glfwMakeContextCurrent(window);
+  Graphics::Window window = Graphics::Window(800, 600, "Voxels");
+	window.makeContextCurrent();
 
 	// Load OpenGL functions
 	if (!gladLoadGL(glfwGetProcAddress)) {
@@ -26,14 +19,15 @@ int main() {
 		return -1;
 	}
 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, window.getWidth(), window.getHeight());
 
 	// Main loop
-	while(!glfwWindowShouldClose(window)) {
-		glfwSwapBuffers(window);
+	while(!window.shouldClose()) {
+		window.swapBuffers();
 		glfwPollEvents();
 	}
 
 	glfwTerminate();
 	return 0;
 }
+
