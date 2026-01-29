@@ -1,5 +1,5 @@
-#include "graphics/GraphicsCore.h"
-#include "graphics/Window.h"
+#include "graphics/graphics_core.h"
+#include "graphics/window.h"
 
 #include <iostream>
 
@@ -10,8 +10,8 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  Graphics::Window window = Graphics::Window(800, 600, "Voxels");
-	window.makeContextCurrent();
+  graphics::Window window = graphics::Window(800, 600, "Voxels");
+	window.MakeContextCurrent();
 
 	// Load OpenGL functions
 	if (!gladLoadGL(glfwGetProcAddress)) {
@@ -19,11 +19,11 @@ int main() {
 		return -1;
 	}
 
-	glViewport(0, 0, window.getWidth(), window.getHeight());
+	glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
 	// Main loop
-	while(!window.shouldClose()) {
-		window.swapBuffers();
+	while(!window.ShouldClose()) {
+		window.SwapBuffers();
 		glfwPollEvents();
 	}
 

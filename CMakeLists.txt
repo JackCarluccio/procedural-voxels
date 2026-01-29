@@ -13,7 +13,7 @@ add_subdirectory(external/glfw)
 
 # Project Sources
 file(GLOB_RECURSE SOURCES
-  "src/*.cpp"
+  "src/*.cc"
   "include/*.h"
 )
 
