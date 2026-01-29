@@ -1,12 +1,12 @@
-#include "graphics/Window.h"
+#include "graphics/window.h"
 
-#include "graphics/GraphicsCore.h"
+#include "graphics/graphics_core.h"
 
 #include <iostream>
 #include <stdexcept>
 #include <utility>
 
-namespace Graphics {
+namespace graphics {
 
   Window::Window(int width, int height, const std::string& title)
     : width_(width),
@@ -63,27 +63,27 @@ namespace Graphics {
     return *this;
   }
 
-  void Window::makeContextCurrent() const noexcept {
+  void Window::MakeContextCurrent() const noexcept {
     glfwMakeContextCurrent(window_);
   }
 
-  bool Window::shouldClose() const noexcept {
+  bool Window::ShouldClose() const noexcept {
     return glfwWindowShouldClose(window_);
   }
 
-  void Window::swapBuffers() const noexcept {
+  void Window::SwapBuffers() const noexcept {
     return glfwSwapBuffers(window_);
   }
 
-  void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) noexcept {
+  void Window::framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept {
     // Find the cpp instance from GLFW user pointer
-    Window* windowClass = static_cast<Window*>(glfwGetWindowUserPointer(window));
-    if (windowClass) {
-      windowClass->onResize(width, height);
+    Window* window = static_cast<Window*>(glfwGetWindowUserPointer(handle));
+    if (window) {
+      window->OnResize(width, height);
     }
   }
 
-  void Window::onResize(int width, int height) noexcept {
+  void Window::OnResize(int width, int height) noexcept {
     width_ = width;
     height_ = height;
     glViewport(0, 0, width, height);
