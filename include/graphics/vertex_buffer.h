@@ -19,7 +19,7 @@ public:
     void Unbind() const noexcept;
 
 private:
-    unsigned int vertex_buffer_id_;
+    unsigned int id_;
 };
 
 } // namespace voxels::graphics

@@ -5,8 +5,8 @@
 namespace voxels::graphics {
 
 VertexBuffer::VertexBuffer(size_t size, const void* data, unsigned int usage) {
-    glGenBuffers(1, &vertex_buffer_id_);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
+    glGenBuffers(1, &id_);
+    glBindBuffer(GL_ARRAY_BUFFER, id_);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);
 
     // Unbind to force explicit binding later
@@ -14,28 +14,28 @@ VertexBuffer::VertexBuffer(size_t size, const void* data, unsigned int usage) {
 }
 
 VertexBuffer::~VertexBuffer() {
-    glDeleteBuffers(1, &vertex_buffer_id_);
+    glDeleteBuffers(1, &id_);
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
-    : vertex_buffer_id_(other.vertex_buffer_id_)
+    : id_(other.id_)
 {
-    other.vertex_buffer_id_ = 0;
+    other.id_ = 0;
 }
 
 VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept {
     if (this == &other) return *this;
 
-    glDeleteBuffers(1, &vertex_buffer_id_);
+    glDeleteBuffers(1, &id_);
 
-    vertex_buffer_id_ = other.vertex_buffer_id_;
-    other.vertex_buffer_id_ = 0;
+    id_ = other.id_;
+    other.id_ = 0;
 
     return *this;
 }
 
 void VertexBuffer::Bind() const noexcept {
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
+    glBindBuffer(GL_ARRAY_BUFFER, id_);
 }
 
 void VertexBuffer::Unbind() const noexcept {

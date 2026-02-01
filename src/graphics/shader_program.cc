@@ -56,14 +56,14 @@ namespace voxels::graphics {
 ShaderProgram::ShaderProgram(
     const std::filesystem::path& vertex_shader_path,
     const std::filesystem::path& fragment_shader_path)
-    : program_id_(glCreateProgram())
+    : id_(glCreateProgram())
 {
     unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_path);
     unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader_path);
 
-    glAttachShader(program_id_, vertex_shader_id);
-    glAttachShader(program_id_, fragment_shader_id);
-    glLinkProgram(program_id_);
+    glAttachShader(id_, vertex_shader_id);
+    glAttachShader(id_, fragment_shader_id);
+    glLinkProgram(id_);
 
     // Delete shaders as they're linked and no longer necessary
     glDeleteShader(vertex_shader_id);
@@ -72,19 +72,19 @@ ShaderProgram::ShaderProgram(
     // Linking could fail if shaders are incompatible (different i/o)
     int success;
     char info_log[512];
-    glGetProgramiv(program_id_, GL_LINK_STATUS, &success);
+    glGetProgramiv(id_, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(program_id_, 512, nullptr, info_log);
+        glGetProgramInfoLog(id_, 512, nullptr, info_log);
         throw std::runtime_error("Shader program linking failed: " + std::string(info_log));
     }
 }
 
 ShaderProgram::~ShaderProgram() {
-    glDeleteProgram(program_id_);
+    glDeleteProgram(id_);
 }
 
-ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept : program_id_(other.program_id_) {
-    other.program_id_ = 0;
+ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept : id_(other.id_) {
+    other.id_ = 0;
 }
 
 ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
@@ -92,15 +92,15 @@ ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
         return *this;
     }
 
-    glDeleteProgram(program_id_);
-    program_id_ = other.program_id_;
-    other.program_id_ = 0;
+    glDeleteProgram(id_);
+    id_ = other.id_;
+    other.id_ = 0;
 
     return *this;
 }
 
 void ShaderProgram::Use() const noexcept {
-    glUseProgram(program_id_);
+    glUseProgram(id_);
 }
 
 } // namespace voxels::graphics

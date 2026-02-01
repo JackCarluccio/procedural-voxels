@@ -22,7 +22,7 @@ public:
     void Use() const noexcept;
 
 private:
-    unsigned int program_id_;
+    unsigned int id_;
 };
 
 } // namespace voxels::graphics

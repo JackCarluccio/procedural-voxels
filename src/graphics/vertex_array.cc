@@ -6,25 +6,25 @@
 namespace voxels::graphics {
 
 VertexArray::VertexArray() {
-    glGenVertexArrays(1, &vertex_array_id_);
+    glGenVertexArrays(1, &id_);
 }
 
 VertexArray::~VertexArray() {
-    glDeleteVertexArrays(1, &vertex_array_id_);
+    glDeleteVertexArrays(1, &id_);
 }
 
 VertexArray::VertexArray(VertexArray&& other) noexcept
-    : vertex_array_id_(other.vertex_array_id_) {
-    other.vertex_array_id_ = 0;
+    : id_(other.id_) {
+    other.id_ = 0;
 }
 
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
     if (this == &other) return *this;
 
-    glDeleteVertexArrays(1, &vertex_array_id_);
+    glDeleteVertexArrays(1, &id_);
     
-    vertex_array_id_ = other.vertex_array_id_;
-    other.vertex_array_id_ = 0;
+    id_ = other.id_;
+    other.id_ = 0;
 
     return *this;
 }
@@ -58,7 +58,7 @@ void VertexArray::DisableAttributeLayout(unsigned int layout) const noexcept {
 }
 
 void VertexArray::Bind() const noexcept {
-    glBindVertexArray(vertex_array_id_);
+    glBindVertexArray(id_);
 }
 
 void VertexArray::Unbind() const noexcept {
