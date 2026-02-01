@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VOXELS_GRAPHICS_WINDOW_H_
+#define VOXELS_GRAPHICS_WINDOW_H_
 
 #include <string>
 
@@ -6,36 +7,37 @@ struct GLFWwindow;
 
 namespace voxels::graphics {
 
-	class Window {
-	public:
-		explicit Window(int width, int height, const std::string& title);
-		~Window();
+class Window {
+public:
+	explicit Window(int width, int height, const std::string& title);
+	~Window();
 
-		// Windows own unique resources and therefore should not be copied
-		Window(const Window&) = delete;
-		Window& operator=(const Window&) = delete;
-		// Allow moving of windows
-		Window(Window&& other) noexcept;
-		Window& operator=(Window&& other) noexcept;
+	// Windows own unique resources and therefore should not be copied
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
+	Window(Window&& other) noexcept;
+	Window& operator=(Window&& other) noexcept;
 
-		void MakeContextCurrent() const noexcept;
-		bool ShouldClose() const noexcept;
-		void SwapBuffers() const noexcept;
+	void MakeContextCurrent() const noexcept;
+	bool ShouldClose() const noexcept;
+	void SwapBuffers() const noexcept;
 
-		int GetWidth() const noexcept { return width_; }
-		int GetHeight() const noexcept { return height_; }
-		const std::string& GetTitle() const noexcept { return title_; }
+	int GetWidth() const noexcept { return width_; }
+	int GetHeight() const noexcept { return height_; }
+	const std::string& GetTitle() const noexcept { return title_; }
 
-	private:
-		// Callback for GLFW
-		static void framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept;
+private:
+	// Callback for GLFW
+	static void framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept;
 
-		void OnResize(int width, int height) noexcept;
+	void OnResize(int width, int height) noexcept;
 
-		int width_;
-		int height_;
-		std::string title_;
-		GLFWwindow* window_;
-	};
+	int width_;
+	int height_;
+	std::string title_;
+	GLFWwindow* window_; // Must be initialized after title_
+};
 
 } // namespace voxels::graphics
+
+#endif // VOXELS_GRAPHICS_WINDOW_H_

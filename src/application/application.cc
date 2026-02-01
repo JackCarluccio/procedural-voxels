@@ -6,49 +6,47 @@
 
 namespace voxels::application {
 
-    Application::Application(int width, int height, const std::string& title)
-        : is_running_(true)
-    {
-        // Initialize GLFW
-        if (glfwInit() == GLFW_FALSE) {
-            throw std::runtime_error("Failed to initialize GLFW");
-        }
-
-        // Configure GLFW for OpenGL 4.6 Core
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        // Create application window
-        window_ = std::make_unique<graphics::Window>(width, height, title);
-        window_->MakeContextCurrent();
-
-        // Load OpenGL functions using GLAD
-        if (!gladLoadGL(glfwGetProcAddress)) {
-		    throw std::runtime_error("Failed to initialize OpenGL loader");
-	    }
+Application::Application(int width, int height, const std::string& title)
+    : is_running_(true)
+{
+    if (glfwInit() == GLFW_FALSE) {
+        throw std::runtime_error("Failed to initialize GLFW");
     }
 
-    Application::~Application() {
-        glfwTerminate();
-    }
+    // Configure GLFW for OpenGL 4.6 Core
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    void Application::Run() {
-        while (is_running_ && !window_->ShouldClose()) {
-            Update();
-            Draw();
-        }
-    }
+    window_ = std::make_unique<graphics::Window>(width, height, title);
+    window_->MakeContextCurrent();
 
-    void Application::Update() {
-        glfwPollEvents();
+    // Load OpenGL functions using GLAD
+    if (gladLoadGL(glfwGetProcAddress) == 0) {
+        throw std::runtime_error("Failed to initialize OpenGL loader");
     }
+}
 
-    void Application::Draw() {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+Application::~Application() {
+    glfwTerminate();
+}
 
-        window_->SwapBuffers();
+void Application::Run() {
+    while (is_running_ && !window_->ShouldClose()) {
+        Update();
+        Draw();
     }
+}
+
+void Application::Update() {
+    glfwPollEvents();
+}
+
+void Application::Draw() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    window_->SwapBuffers();
+}
 
 } // namespace voxels::application

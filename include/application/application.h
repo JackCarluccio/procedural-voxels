@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VOXELS_APPLICATION_APPLICATION_H_
+#define VOXELS_APPLICATION_APPLICATION_H_
 
 #include "graphics/window.h"
 
@@ -7,25 +8,26 @@
 
 namespace voxels::application {
 
-    class Application {
-    public:
-        explicit Application(int width, int height, const std::string& title);
-        ~Application();
+class Application {
+public:
+    explicit Application(int width, int height, const std::string& title);
+    ~Application();
 
-        // The application should not be copied or moved
-        Application(const Application&) = delete;
-        Application& operator=(const Application&) = delete;
-        Application(Application&&) = delete;
-        Application& operator=(Application&&) = delete;
+    Application(const Application&) = delete;
+    Application& operator=(const Application&) = delete;
+    Application(Application&&) = delete;
+    Application& operator=(Application&&) = delete;
 
-        void Run();
+    void Run();
 
-    private:
-        std::unique_ptr<graphics::Window> window_;
-        bool is_running_;
+private:
+    std::unique_ptr<graphics::Window> window_;
+    bool is_running_;
 
-        void Update();
-        void Draw();
-    };
+    void Update();
+    void Draw();
+};
 
 } // namespace voxels::application
+
+#endif // VOXELS_APPLICATION_APPLICATION_H_
