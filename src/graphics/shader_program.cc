@@ -88,9 +88,7 @@ ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept : id_(other.id_) {
 }
 
 ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
-    if (this == &other) {
-        return *this;
-    }
+    if (this == &other) return *this;
 
     glDeleteProgram(id_);
     id_ = other.id_;

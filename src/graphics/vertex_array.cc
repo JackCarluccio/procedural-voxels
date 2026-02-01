@@ -13,8 +13,7 @@ VertexArray::~VertexArray() {
     glDeleteVertexArrays(1, &id_);
 }
 
-VertexArray::VertexArray(VertexArray&& other) noexcept
-    : id_(other.id_) {
+VertexArray::VertexArray(VertexArray&& other) noexcept : id_(other.id_) {
     other.id_ = 0;
 }
 
@@ -22,7 +21,6 @@ VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
     if (this == &other) return *this;
 
     glDeleteVertexArrays(1, &id_);
-    
     id_ = other.id_;
     other.id_ = 0;
 
