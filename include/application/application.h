@@ -18,6 +18,7 @@ public:
     Application(Application&&) = delete;
     Application& operator=(Application&&) = delete;
 
+    void Init();
     void Run();
 
 private:
