@@ -7,7 +7,7 @@ class VertexBuffer;
 
 class VertexArray {
 public:
-    VertexArray();
+    explicit VertexArray();
     ~VertexArray();
 
     VertexArray(const VertexArray&) = delete;

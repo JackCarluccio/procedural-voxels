@@ -1,10 +1,15 @@
 #ifndef VOXELS_APPLICATION_APPLICATION_H_
 #define VOXELS_APPLICATION_APPLICATION_H_
 
-#include "graphics/window.h"
-
 #include <memory>
 #include <string>
+
+namespace voxels::graphics {
+
+class Window;
+class Renderer;
+
+} // namespace voxels::graphics
 
 namespace voxels::application {
 
@@ -23,6 +28,7 @@ public:
 
 private:
     std::unique_ptr<graphics::Window> window_;
+    std::unique_ptr<graphics::Renderer> renderer_;
     bool is_running_;
 
     void Update();
