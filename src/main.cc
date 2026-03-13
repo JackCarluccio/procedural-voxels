@@ -6,6 +6,7 @@
 int main() {
 	try {
 		voxels::application::Application app(800, 600, "Voxels");
+		app.Init();
 		app.Run();
 	} catch (const std::exception& e) {
 		std::cerr << "Application error: " << e.what() << std::endl;
