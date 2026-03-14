@@ -7,12 +7,16 @@
 #include "graphics/vertex_array.h"
 #include "graphics/window.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <memory>
 
 const float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+    -0.5f, -0.5f, 2.0f,
+     0.5f, -0.5f, 2.0f,
+     0.0f,  0.5f, 2.0f
 };
 const float indices[] = {
     0, 1, 2
@@ -38,11 +42,6 @@ void Renderer::Init() {
         "assets/shaders/vertex_shader.vert",
         "assets/shaders/fragment_shader.frag"
     );
-
-    shader_program->Use();
-    vertex_buffer->Bind();
-    vertex_array->Bind();
-    element_buffer->Bind();
 }
 
 void Renderer::Render() {
@@ -52,6 +51,28 @@ void Renderer::Render() {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 1.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f),
+        static_cast<float>(window_->GetWidth()) / static_cast<float>(window_->GetHeight()),
+        0.1f,
+        100.0f
+    );
+
+    vertex_buffer->Bind();
+    vertex_array->Bind();
+    element_buffer->Bind();
+
+    shader_program->Use();
+    shader_program->SetUniformMatrix4x4("model", glm::value_ptr(model));
+    shader_program->SetUniformMatrix4x4("view", glm::value_ptr(view));
+    shader_program->SetUniformMatrix4x4("projection", glm::value_ptr(projection));
 
     glDrawArrays(GL_TRIANGLES, 0, element_buffer->GetCount());
 
