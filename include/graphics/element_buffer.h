@@ -26,4 +26,4 @@ private:
 
 } // namespace voxels::graphics
 
-#endif
+#endif // VOXELS_GRAPHICS_ELEMENT_BUFFER_H_

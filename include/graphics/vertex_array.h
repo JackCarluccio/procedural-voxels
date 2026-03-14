@@ -30,4 +30,4 @@ private:
 
 } // namespace voxels::graphics
 
-#endif
+#endif // VOXELS_GRAPHICS_VERTEX_ARRAY_H_

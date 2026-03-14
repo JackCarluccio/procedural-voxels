@@ -1,8 +1,9 @@
 #include "application/application.h"
 
 #include "graphics/graphics_core.h"
-#include "graphics/window.h"
+#include "graphics/camera.h"
 #include "graphics/renderer.h"
+#include "graphics/window.h"
 
 #include <stdexcept>
 
@@ -28,7 +29,13 @@ Application::Application(int width, int height, const std::string& title)
         throw std::runtime_error("Failed to initialize OpenGL loader");
     }
 
-    renderer_ = std::make_unique<graphics::Renderer>(window_.get());
+    camera_ = std::make_unique<graphics::Camera>(
+        glm::radians(45.0f),
+        static_cast<float>(width) / static_cast<float>(height),
+        0.1f,
+        100.0f
+    );
+    renderer_ = std::make_unique<graphics::Renderer>();
 }
 
 Application::~Application() {
@@ -48,10 +55,17 @@ void Application::Run() {
 
 void Application::Update() {
     glfwPollEvents();
+
+    if (window_->HasChangedSize()) {
+        int width = window_->GetWidth();
+        int height = window_->GetHeight();
+        camera_->SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    }
 }
 
 void Application::Draw() {
-    renderer_->Render();
+    renderer_->Draw(camera_.get());
+    window_->SwapBuffers();
 }
 
 } // namespace voxels::application

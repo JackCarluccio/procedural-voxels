@@ -6,8 +6,9 @@
 
 namespace voxels::graphics {
 
-class Window;
+class Camera;
 class Renderer;
+class Window;
 
 } // namespace voxels::graphics
 
@@ -27,8 +28,9 @@ public:
     void Run();
 
 private:
-    std::unique_ptr<graphics::Window> window_;
+    std::unique_ptr<graphics::Camera> camera_;
     std::unique_ptr<graphics::Renderer> renderer_;
+    std::unique_ptr<graphics::Window> window_;
     bool is_running_;
 
     void Update();

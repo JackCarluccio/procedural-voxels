@@ -76,6 +76,12 @@ void Window::SwapBuffers() const noexcept {
 	return glfwSwapBuffers(window_);
 }
 
+bool Window::HasChangedSize() noexcept {
+	bool changed = hasChangedSize_;
+	hasChangedSize_ = false;
+	return changed;
+}
+
 void Window::framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept {
 	// Find the cpp instance from GLFW user pointer
 	Window* window = static_cast<Window*>(glfwGetWindowUserPointer(handle));
@@ -88,6 +94,7 @@ void Window::OnResize(int width, int height) noexcept {
 	width_ = width;
 	height_ = height;
 	glViewport(0, 0, width, height);
+	hasChangedSize_ = true;
 }
 
 } // namespace voxels::graphics
