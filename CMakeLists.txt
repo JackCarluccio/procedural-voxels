@@ -9,6 +9,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(glad STATIC external/glad/src/gl.c)
 target_include_directories(glad SYSTEM PUBLIC external/glad/include)
 
+add_library(glm INTERFACE)
+target_include_directories(glm SYSTEM INTERFACE external/glm)
+
+# GLFW build options - only core library
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
 add_subdirectory(external/glfw)
 
 # Project Sources
@@ -25,7 +34,7 @@ target_include_directories(${PROJECT_NAME}
   # Treat GLFW headers as SYSTEM to suppress internal warnings
   SYSTEM PRIVATE external/glfw/include
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE glad glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE glad glfw glm)
 
 # Compiler Warnings
 if(MSVC)

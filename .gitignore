@@ -5,8 +5,16 @@ build/
 external/glfw/docs/
 external/glfw/examples/
 external/glfw/tests/
-external/glfw/CMake
+external/glfw/.github
+external/glfw/.editorconfig
+external/glfw/.mailmap
+
+# GLM bloat
+external/glm/.github
+external/glm/cmake
+external/glm/doc
+external/glm/test
+external/glm/util
 
 # System and IDE files
 *.save
-
