@@ -101,4 +101,9 @@ void ShaderProgram::Use() const noexcept {
     glUseProgram(id_);
 }
 
+void ShaderProgram::SetUniformMatrix4x4(const std::string& name, const float* value) const noexcept {
+    int location = glGetUniformLocation(id_, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, value);
+}
+
 } // namespace voxels::graphics
