@@ -2,10 +2,8 @@
 
 #include "graphics/graphics_core.h"
 #include "graphics/camera.h"
-#include "graphics/element_buffer.h"
+#include "graphics/mesh.h"
 #include "graphics/shader_program.h"
-#include "graphics/vertex_buffer.h"
-#include "graphics/vertex_array.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,13 +16,11 @@ const float vertices[] = {
      0.5f, -0.5f, -2.0f,
      0.0f,  0.5f, -2.0f
 };
-const float indices[] = {
+const int indices[] = {
     0, 1, 2
 };
 
-std::unique_ptr<voxels::graphics::VertexBuffer> vertex_buffer;
-std::unique_ptr<voxels::graphics::VertexArray> vertex_array;
-std::unique_ptr<voxels::graphics::ElementBuffer> element_buffer;
+std::unique_ptr<voxels::graphics::Mesh> mesh;
 std::unique_ptr<voxels::graphics::ShaderProgram> shader_program;
 
 namespace voxels::graphics {
@@ -32,11 +28,10 @@ namespace voxels::graphics {
 Renderer::Renderer() : frame_(0) {}
 
 void Renderer::Init() {
-    vertex_buffer = std::make_unique<graphics::VertexBuffer>(sizeof(vertices), vertices, GL_STATIC_DRAW);
-    vertex_array = std::make_unique<graphics::VertexArray>();
-    vertex_array->LinkAttribute(*vertex_buffer, 0, 3, GL_FLOAT, 3 * sizeof(float), nullptr);
-    vertex_array->EnableAttributeLayout(0);
-    element_buffer = std::make_unique<graphics::ElementBuffer>(3, sizeof(indices), indices, GL_STATIC_DRAW);
+    mesh = std::make_unique<graphics::Mesh>(
+        vertices, sizeof(vertices), indices, sizeof(indices), 3
+    );
+    mesh->LinkAttribute(0, 3, GL_FLOAT, 3 * sizeof(float), nullptr);
 
     shader_program = std::make_unique<graphics::ShaderProgram>(
         "assets/shaders/vertex_shader.vert",
@@ -56,16 +51,14 @@ void Renderer::Draw(const Camera* camera) {
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = camera->GetProjectionMatrix();
 
-    vertex_buffer->Bind();
-    vertex_array->Bind();
-    element_buffer->Bind();
+    mesh->Bind();
 
     shader_program->Use();
     shader_program->SetUniformMatrix4x4("model", glm::value_ptr(model));
     shader_program->SetUniformMatrix4x4("view", glm::value_ptr(view));
     shader_program->SetUniformMatrix4x4("projection", glm::value_ptr(projection));
 
-    glDrawArrays(GL_TRIANGLES, 0, element_buffer->GetCount());
+    glDrawArrays(GL_TRIANGLES, 0, mesh->GetIndexCount());
 
     frame_++;
 }
