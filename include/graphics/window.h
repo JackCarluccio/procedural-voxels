@@ -28,6 +28,8 @@ public:
 	int GetHeight() const noexcept { return height_; }
 	const std::string& GetTitle() const noexcept { return title_; }
 
+	GLFWwindow* GetGLFWwindow() const noexcept { return window_; }
+
 private:
 	// Callback for GLFW
 	static void framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept;

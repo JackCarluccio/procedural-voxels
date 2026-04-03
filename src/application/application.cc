@@ -4,6 +4,7 @@
 #include "graphics/camera.h"
 #include "graphics/renderer.h"
 #include "graphics/window.h"
+#include "input/input_manager.h"
 
 #include <stdexcept>
 
@@ -35,7 +36,10 @@ Application::Application(int width, int height, const std::string& title)
         0.1f,
         100.0f
     );
+
     renderer_ = std::make_unique<graphics::Renderer>();
+
+    input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), *camera_);
 }
 
 Application::~Application() {
@@ -49,16 +53,18 @@ void Application::Init() {
 void Application::Run() {
     while (is_running_ && !window_->ShouldClose()) {
         std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-        // double delta_time = (now - last_frame_time_).count();
+        float delta_time = static_cast<float>((now - last_frame_time_).count()) * 1e-9f;
         last_frame_time_ = now;
 
-        Update();
+        Update(delta_time);
         Draw();
     }
 }
 
-void Application::Update() {
+void Application::Update(float delta_time) {
     glfwPollEvents();
+
+    input_manager_->Update(delta_time);
 
     if (window_->HasChangedSize()) {
         int width = window_->GetWidth();

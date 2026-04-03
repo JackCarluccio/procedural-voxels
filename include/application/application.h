@@ -13,6 +13,12 @@ class Window;
 
 } // namespace voxels::graphics
 
+namespace voxels::input {
+
+class InputManager;
+
+} // namespace voxels::input
+
 namespace voxels::application {
 
 class Application {
@@ -34,10 +40,11 @@ private:
     bool is_running_;
 
     std::unique_ptr<graphics::Camera> camera_;
-    std::unique_ptr<graphics::Renderer> renderer_;
     std::unique_ptr<graphics::Window> window_;
+    std::unique_ptr<graphics::Renderer> renderer_;
+    std::unique_ptr<input::InputManager> input_manager_;
 
-    void Update();
+    void Update(float delta_time);
     void Draw();
 };
 
