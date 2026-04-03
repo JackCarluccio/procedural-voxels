@@ -1,8 +1,6 @@
 #ifndef VOXELS_GRAPHICS_RENDERER_H_
 #define VOXELS_GRAPHICS_RENDERER_H_
 
-#include <chrono>
-
 namespace voxels::graphics {
 
 class Camera;
@@ -13,7 +11,7 @@ namespace voxels::graphics {
 
 class Renderer {
 public:
-    explicit Renderer();
+    explicit Renderer() = default;
 
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
@@ -22,12 +20,6 @@ public:
 
     void Init();
     void Draw(const Camera* camera);
-
-    int GetFrame() const noexcept { return frame_; }
-
-private:
-    int frame_;
-    std::chrono::steady_clock::time_point last_frame_time_;
 };
 
 } // namespace voxels::graphics

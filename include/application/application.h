@@ -1,6 +1,7 @@
 #ifndef VOXELS_APPLICATION_APPLICATION_H_
 #define VOXELS_APPLICATION_APPLICATION_H_
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -11,6 +12,12 @@ class Renderer;
 class Window;
 
 } // namespace voxels::graphics
+
+namespace voxels::input {
+
+class InputManager;
+
+} // namespace voxels::input
 
 namespace voxels::application {
 
@@ -28,12 +35,16 @@ public:
     void Run();
 
 private:
-    std::unique_ptr<graphics::Camera> camera_;
-    std::unique_ptr<graphics::Renderer> renderer_;
-    std::unique_ptr<graphics::Window> window_;
+    int frame_;
+    std::chrono::steady_clock::time_point last_frame_time_;
     bool is_running_;
 
-    void Update();
+    std::unique_ptr<graphics::Camera> camera_;
+    std::unique_ptr<graphics::Window> window_;
+    std::unique_ptr<graphics::Renderer> renderer_;
+    std::unique_ptr<input::InputManager> input_manager_;
+
+    void Update(float delta_time);
     void Draw();
 };
 
