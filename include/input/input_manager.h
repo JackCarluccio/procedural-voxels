@@ -25,6 +25,13 @@ public:
 private:
     GLFWwindow* window_;
     graphics::Camera& camera_;
+
+    double last_cursor_x_;
+    double last_cursor_y_;
+    bool first_mouse_input_;
+
+    void ProcessCameraMovement(float delta_time);
+    void ProcessCameraRotation(float delta_time);
 };
 
 } // namespace voxels::input
