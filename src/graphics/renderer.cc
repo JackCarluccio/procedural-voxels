@@ -25,8 +25,6 @@ std::unique_ptr<voxels::graphics::ShaderProgram> shader_program;
 
 namespace voxels::graphics {
 
-Renderer::Renderer() : frame_(0) {}
-
 void Renderer::Init() {
     mesh = std::make_unique<graphics::Mesh>(
         vertices, sizeof(vertices), indices, sizeof(indices), 3
@@ -40,10 +38,6 @@ void Renderer::Init() {
 }
 
 void Renderer::Draw(const Camera* camera) {
-    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    // double delta_time = (now - last_frame_time_).count();
-    last_frame_time_ = now;
-
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -59,8 +53,6 @@ void Renderer::Draw(const Camera* camera) {
     shader_program->SetUniformMatrix4x4("projection", glm::value_ptr(projection));
 
     glDrawArrays(GL_TRIANGLES, 0, mesh->GetIndexCount());
-
-    frame_++;
 }
 
 } // namespace voxels::graphics

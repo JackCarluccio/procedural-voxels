@@ -1,6 +1,7 @@
 #ifndef VOXELS_APPLICATION_APPLICATION_H_
 #define VOXELS_APPLICATION_APPLICATION_H_
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -28,10 +29,13 @@ public:
     void Run();
 
 private:
+    int frame_;
+    std::chrono::steady_clock::time_point last_frame_time_;
+    bool is_running_;
+
     std::unique_ptr<graphics::Camera> camera_;
     std::unique_ptr<graphics::Renderer> renderer_;
     std::unique_ptr<graphics::Window> window_;
-    bool is_running_;
 
     void Update();
     void Draw();

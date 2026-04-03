@@ -48,6 +48,10 @@ void Application::Init() {
 
 void Application::Run() {
     while (is_running_ && !window_->ShouldClose()) {
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        // double delta_time = (now - last_frame_time_).count();
+        last_frame_time_ = now;
+
         Update();
         Draw();
     }
