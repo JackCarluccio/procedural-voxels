@@ -5,7 +5,7 @@
 
 namespace voxels::graphics {
 
-class Window;
+class Camera;
 
 } // namespace voxels::graphics
 
@@ -13,7 +13,7 @@ namespace voxels::graphics {
 
 class Renderer {
 public:
-    explicit Renderer(Window* window);
+    explicit Renderer();
 
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
@@ -21,14 +21,13 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     void Init();
-    void Render();
+    void Draw(const Camera* camera);
 
     int GetFrame() const noexcept { return frame_; }
 
 private:
     int frame_;
     std::chrono::steady_clock::time_point last_frame_time_;
-    Window* window_;
 };
 
 } // namespace voxels::graphics

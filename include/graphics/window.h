@@ -22,6 +22,8 @@ public:
 	bool ShouldClose() const noexcept;
 	void SwapBuffers() const noexcept;
 
+	bool HasChangedSize() noexcept;
+
 	int GetWidth() const noexcept { return width_; }
 	int GetHeight() const noexcept { return height_; }
 	const std::string& GetTitle() const noexcept { return title_; }
@@ -36,6 +38,7 @@ private:
 	int height_;
 	std::string title_;
 	GLFWwindow* window_; // Must be initialized after title_
+	bool hasChangedSize_;
 };
 
 } // namespace voxels::graphics
