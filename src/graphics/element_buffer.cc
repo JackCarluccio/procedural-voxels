@@ -8,7 +8,6 @@ ElementBuffer::ElementBuffer(int count, size_t size, const void* data, unsigned 
     glGenBuffers(1, &id_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);
-    Unbind();
 }
 
 ElementBuffer::~ElementBuffer() {

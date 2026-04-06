@@ -49,6 +49,12 @@ Application::~Application() {
 
 void Application::Init() {
     renderer_->Init();
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Application::Run() {
@@ -76,7 +82,7 @@ void Application::Update(float delta_time) {
 }
 
 void Application::Draw() {
-    renderer_->Draw(camera_.get());
+    renderer_->Draw(camera_.get(), chunk_manager_->GetMap());
     window_->SwapBuffers();
 }
 

@@ -7,6 +7,7 @@ namespace voxels::graphics {
 
 VertexArray::VertexArray() {
     glGenVertexArrays(1, &id_);
+    glBindVertexArray(id_);
 }
 
 VertexArray::~VertexArray() {
@@ -31,28 +32,22 @@ void VertexArray::LinkAttribute(const VertexBuffer& vertex_buffer, unsigned int 
     Bind();
     vertex_buffer.Bind();
     glVertexAttribPointer(layout, size, type, GL_FALSE, stride, offset);
-    vertex_buffer.Unbind();
-    Unbind();
 }
 
 void VertexArray::LinkAttributeI(const VertexBuffer& vertex_buffer, unsigned int layout, int size, unsigned int type, int stride, const void* offset) const noexcept {
     Bind();
     vertex_buffer.Bind();
     glVertexAttribIPointer(layout, size, type, stride, offset);
-    vertex_buffer.Unbind();
-    Unbind();
 }
 
 void VertexArray::EnableAttributeLayout(unsigned int layout) const noexcept {
     Bind();
     glEnableVertexAttribArray(layout);
-    Unbind();
 }
 
 void VertexArray::DisableAttributeLayout(unsigned int layout) const noexcept {
     Bind();
     glDisableVertexAttribArray(layout);
-    Unbind();
 }
 
 void VertexArray::Bind() const noexcept {

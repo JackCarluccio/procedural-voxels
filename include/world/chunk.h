@@ -1,10 +1,12 @@
 #ifndef VOXELS_WORLD_CHUNK_H_
 #define VOXELS_WORLD_CHUNK_H_
 
+#include "graphics/mesh.h"
 #include "world/block.h"
 
 #include <array>
 #include <cstdint>
+#include <memory>
 
 #include <glm/vec2.hpp>
 
@@ -45,8 +47,17 @@ public:
         SetBlock(GetIndex(x, y, z), block);
     }
 
+    const std::unique_ptr<graphics::Mesh>& GetMesh() const noexcept {
+        return mesh_;
+    }
+
+    void SetMesh(std::unique_ptr<graphics::Mesh> mesh) noexcept {
+        mesh_ = std::move(mesh);
+    }
+
 private:
     glm::ivec2 position_;
+    std::unique_ptr<graphics::Mesh> mesh_;
     std::array<Block, BLOCKS_PER_CHUNK> blocks_;
 };
 

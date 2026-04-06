@@ -9,8 +9,8 @@ namespace voxels::graphics {
 
 Mesh::Mesh(const void* vertices, size_t vertices_size, const void* indices, size_t indices_size, int index_count)
     : vertex_buffer_(vertices_size, vertices, GL_STATIC_DRAW),
-      vertex_array_(),
-      element_buffer_(index_count, indices_size, indices, GL_STATIC_DRAW)
+    	vertex_array_(),
+		element_buffer_(index_count, indices_size, indices, GL_STATIC_DRAW)
 {}
 
 void Mesh::LinkAttribute(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const {

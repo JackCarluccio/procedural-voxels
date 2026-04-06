@@ -8,7 +8,6 @@ VertexBuffer::VertexBuffer(size_t size, const void* data, unsigned int usage) {
     glGenBuffers(1, &id_);
     glBindBuffer(GL_ARRAY_BUFFER, id_);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);
-    Unbind();
 }
 
 VertexBuffer::~VertexBuffer() {

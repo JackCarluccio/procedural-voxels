@@ -2,6 +2,7 @@
 #define VOXELS_WORLD_CHUNK_MANAGER_H_
 
 #include "world/chunk.h"
+#include "world/chunk_mesher.h"
 #include "util/ivec2_hash.h"
 
 #include <glm/glm.hpp>
@@ -13,7 +14,7 @@ namespace voxels::world {
 
 class ChunkManager {
 public:
-    ChunkManager() = default;
+    explicit ChunkManager();
     ~ChunkManager() = default;
 
     ChunkManager(const ChunkManager&) = delete;
@@ -28,8 +29,13 @@ public:
 
     void Update(const glm::vec3& player_position) noexcept;
 
+    const std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash>& GetMap() const noexcept {
+        return chunks_;
+    };
+
 private:
     std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash> chunks_;
+    std::unique_ptr<ChunkMesher> chunk_mesher_;
 
     void GenerateChunk(const glm::ivec2& position);
 };
