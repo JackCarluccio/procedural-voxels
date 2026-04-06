@@ -5,6 +5,7 @@
 #include "graphics/renderer.h"
 #include "graphics/window.h"
 #include "input/input_manager.h"
+#include "world/chunk_manager.h"
 
 #include <stdexcept>
 
@@ -38,8 +39,8 @@ Application::Application(int width, int height, const std::string& title)
     );
 
     renderer_ = std::make_unique<graphics::Renderer>();
-
     input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), *camera_);
+    chunk_manager_ = std::make_unique<world::ChunkManager>();
 }
 
 Application::~Application() {
@@ -63,14 +64,15 @@ void Application::Run() {
 
 void Application::Update(float delta_time) {
     glfwPollEvents();
-
-    input_manager_->Update(delta_time);
-
+    
     if (window_->HasChangedSize()) {
         int width = window_->GetWidth();
         int height = window_->GetHeight();
         camera_->SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
     }
+
+    input_manager_->Update(delta_time);
+    chunk_manager_->Update(camera_->GetPosition());
 }
 
 void Application::Draw() {

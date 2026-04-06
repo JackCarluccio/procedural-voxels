@@ -19,6 +19,12 @@ class InputManager;
 
 } // namespace voxels::input
 
+namespace voxels::world {
+
+class ChunkManager;
+
+} // namespace voxels::world
+
 namespace voxels::application {
 
 class Application {
@@ -43,6 +49,7 @@ private:
     std::unique_ptr<graphics::Window> window_;
     std::unique_ptr<graphics::Renderer> renderer_;
     std::unique_ptr<input::InputManager> input_manager_;
+    std::unique_ptr<world::ChunkManager> chunk_manager_;
 
     void Update(float delta_time);
     void Draw();
