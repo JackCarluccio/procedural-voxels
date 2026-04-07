@@ -9,19 +9,16 @@ namespace voxels::world {
 
 namespace {
 
-constexpr int AMPLITUDE = 16;
-constexpr int BASE_HEIGHT = 16;
-constexpr float FREQUENCY = 0.1f;
+constexpr float AMPLITUDE = 32.0f;
+constexpr int BASE_HEIGHT = 36.0f;
+generation::PerlinNoise2d continentalnessSampler(0.025f, 3, 0.5f, 2.0f);
 
 void GenerateHeightMap(int* heightMap, int chunkWorldX, int chunkWorldZ) {
     for (int x = 0; x < Chunk::SIZE; x++) {
         for (int z = 0; z < Chunk::SIZE; z++) {
             int height = static_cast<int>(
-                generation::PerlinNoise2d(
-                    (x + chunkWorldX) * FREQUENCY,
-                    (z + chunkWorldZ) * FREQUENCY
-                ) * AMPLITUDE + BASE_HEIGHT
-            );
+                continentalnessSampler.Sample(chunkWorldX + x, chunkWorldZ + z) * AMPLITUDE
+            ) + BASE_HEIGHT;
 
             heightMap[z + x * Chunk::SIZE] = height;
         }

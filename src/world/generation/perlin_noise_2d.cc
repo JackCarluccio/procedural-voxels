@@ -41,11 +41,7 @@ constexpr float DotGridGradient(int cellX, int cellY, float x, float y) noexcept
     return dx * gradient.x + dy * gradient.y;
 }
 
-} // namespace
-
-namespace voxels::world::generation {
-
-float PerlinNoise2d(float x, float y) noexcept {
+constexpr float SampleNoise2d(float x, float y) noexcept {
     // Surrounding grid points
     int x0 = static_cast<int>(floor(x));
     int y0 = static_cast<int>(floor(y));
@@ -68,6 +64,35 @@ float PerlinNoise2d(float x, float y) noexcept {
 
     // Interpolate between the top and bottom gradients
     return Interpolate(ix0, ix1, ty);
+    return (tx + ty) / 2;
+}
+
+} // namespace
+
+namespace voxels::world::generation {
+
+PerlinNoise2d::PerlinNoise2d(float frequency, int octaves, float persistence, float lacunarity)
+    : frequency_(frequency), octaves_(octaves), persistence_(persistence), lacunarity_(lacunarity)
+{
+    max_noise_ = 0.0f;
+    float amplitude = 1.0f;
+    for (int i = 0; i < octaves_; i++) {
+        max_noise_ += amplitude;
+        amplitude *= persistence_;
+    }
+}
+
+float PerlinNoise2d::Sample(float x, float y) const noexcept {
+    float noise = 0.0f;
+    float frequency = frequency_;
+    float amplitude = 1.0f;
+    for (int i = 0; i < octaves_; i++) {
+        noise += SampleNoise2d(x * frequency, y * frequency) * amplitude;
+        frequency *= lacunarity_;
+        amplitude *= persistence_;
+    }
+
+    return noise / max_noise_;
 }
 
 } // namespace voxels::world::generation
