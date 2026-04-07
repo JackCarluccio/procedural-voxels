@@ -31,14 +31,24 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # Configuration
 target_include_directories(${PROJECT_NAME}
   PRIVATE include
-  # Treat GLFW headers as SYSTEM to suppress internal warnings
   SYSTEM PRIVATE external/glfw/include
+  SYSTEM PRIVATE external/stb
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE glad glfw glm)
 
 # Compiler Warnings
 if(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+
+  # /WX promotes warnings within stb_image to errors, failing the build
+  set_source_files_properties(src/util/stb_image_impl.cc PROPERTIES
+    COMPILE_OPTIONS "/wd4505"
+  )
 else()
   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
+  # -Werror promotes warnings within stb_image to errors, failing the build
+  set_source_files_properties(src/util/stb_image_impl.cc PROPERTIES
+    COMPILE_OPTIONS "-Wno-unused-function"
+  )
 endif()

@@ -62,8 +62,8 @@ void InputManager::ProcessCameraRotation(float delta_time) {
     float x_delta = static_cast<float>(cursor_x - last_cursor_x_);
     float y_delta = static_cast<float>(last_cursor_y_ - cursor_y);
 
-    camera_.SetYaw(camera_.GetYaw() + x_delta * delta_time * 0.1f);
-    camera_.SetPitch(camera_.GetPitch() + y_delta * delta_time * 0.1f);
+    camera_.SetYaw(camera_.GetYaw() + x_delta * delta_time * 0.25f);
+    camera_.SetPitch(camera_.GetPitch() + y_delta * delta_time * 0.25f);
 
     last_cursor_x_ = cursor_x;
     last_cursor_y_ = cursor_y;

@@ -1,6 +1,13 @@
 #ifndef VOXELS_GRAPHICS_RENDERER_H_
 #define VOXELS_GRAPHICS_RENDERER_H_
 
+#include "util/ivec2_hash.h"
+#include "world/chunk.h"
+
+#include <glm/vec2.hpp>
+
+#include <unordered_map>
+
 namespace voxels::graphics {
 
 class Camera;
@@ -19,7 +26,7 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     void Init();
-    void Draw(const Camera* camera);
+    void Draw(const Camera* camera, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks);
 };
 
 } // namespace voxels::graphics

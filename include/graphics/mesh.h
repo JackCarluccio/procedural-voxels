@@ -24,6 +24,7 @@ public:
     void Unbind() const noexcept { vertex_array_.Unbind(); }
 
     void LinkAttribute(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const;
+    void LinkAttributeI(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const;
 
     int GetIndexCount() const noexcept { return element_buffer_.GetCount(); }
 
