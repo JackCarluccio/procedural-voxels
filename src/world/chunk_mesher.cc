@@ -26,10 +26,10 @@ constexpr float face_vertex_offsets[6][4][3] = {
 };
 
 constexpr float vertex_uvs[4][2] = {
-    {0.0f / 16.0f, 0.0f / 16.0f},
-    {1.0f / 16.0f, 0.0f / 16.0f},
+    {0.0f / 16.0f, 1.0f / 16.0f},
     {1.0f / 16.0f, 1.0f / 16.0f},
-    {0.0f / 16.0f, 1.0f / 16.0f}
+    {1.0f / 16.0f, 0.0f / 16.0f},
+    {0.0f / 16.0f, 0.0f / 16.0f}
 };
 
 void AddFace(std::vector<VertexData>& vertices, std::vector<uint32_t>& indices, int x, int y, int z, int face, voxels::world::Block block) noexcept {

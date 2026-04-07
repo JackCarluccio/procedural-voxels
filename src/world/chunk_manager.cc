@@ -9,7 +9,8 @@ namespace voxels::world {
 
 ChunkManager::ChunkManager()
     : chunk_generator_(std::make_unique<ChunkGenerator>()),
-      chunk_mesher_(std::make_unique<ChunkMesher>()) {}
+      chunk_mesher_(std::make_unique<ChunkMesher>()),
+      chunk_queue_(std::make_unique<ChunkQueue>()) {}
 
 bool ChunkManager::HasChunk(const glm::ivec2& position) const noexcept {
     return chunks_.find(position) != chunks_.end();
@@ -33,11 +34,22 @@ void ChunkManager::Update(const glm::vec3& player_position) noexcept {
         static_cast<int>(std::floor(player_position.z / Chunk::SIZE))
     );
 
-    if (HasChunk(player_chunk_position)) {
+    static constexpr int RENDER_DISTANCE = 3;
+    for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) {
+        for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
+            glm::ivec2 neighbor_position = player_chunk_position + glm::ivec2(x, z);
+            if (!HasChunk(neighbor_position)) {
+                chunk_queue_->Push(neighbor_position);
+            }
+        }
+    }
+
+    if (chunk_queue_->IsEmpty()) {
         return;
     }
 
-    GenerateChunk(player_chunk_position);
+    glm::ivec2 position = chunk_queue_->Pop();
+    GenerateChunk(position);
 }
 
 void ChunkManager::GenerateChunk(const glm::ivec2& position) {

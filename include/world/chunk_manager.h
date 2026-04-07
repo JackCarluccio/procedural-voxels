@@ -4,6 +4,7 @@
 #include "world/chunk.h"
 #include "world/chunk_generator.h"
 #include "world/chunk_mesher.h"
+#include "world/chunk_queue.h"
 #include "util/ivec2_hash.h"
 
 #include <glm/glm.hpp>
@@ -38,6 +39,7 @@ private:
     std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash> chunks_;
     std::unique_ptr<ChunkGenerator> chunk_generator_;
     std::unique_ptr<ChunkMesher> chunk_mesher_;
+    std::unique_ptr<ChunkQueue> chunk_queue_;
 
     void GenerateChunk(const glm::ivec2& position);
 };
