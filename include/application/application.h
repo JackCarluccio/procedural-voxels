@@ -29,7 +29,7 @@ namespace voxels::application {
 
 class Application {
 public:
-    explicit Application(int width, int height, const std::string& title);
+    explicit Application(const std::string& title);
     ~Application();
 
     Application(const Application&) = delete;

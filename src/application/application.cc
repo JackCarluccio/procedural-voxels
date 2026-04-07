@@ -11,7 +11,7 @@
 
 namespace voxels::application {
 
-Application::Application(int width, int height, const std::string& title)
+Application::Application(const std::string& title)
     : is_running_(true)
 {
     if (glfwInit() == GLFW_FALSE) {
@@ -23,7 +23,19 @@ Application::Application(int width, int height, const std::string& title)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window_ = std::make_unique<graphics::Window>(width, height, title);
+    GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(primary_monitor);
+
+    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+    window_ = std::make_unique<graphics::Window>(mode->width, mode->height, title, primary_monitor);
+
+    glfwSetInputMode(window_->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
     window_->MakeContextCurrent();
 
     // Load OpenGL functions using GLAD
@@ -33,7 +45,7 @@ Application::Application(int width, int height, const std::string& title)
 
     camera_ = std::make_unique<graphics::Camera>(
         glm::radians(45.0f),
-        static_cast<float>(width) / static_cast<float>(height),
+        static_cast<float>(mode->width) / static_cast<float>(mode->height),
         0.1f,
         100.0f
     );

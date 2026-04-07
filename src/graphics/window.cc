@@ -8,11 +8,11 @@
 
 namespace voxels::graphics {
 
-Window::Window(int width, int height, const std::string& title)
+Window::Window(int width, int height, const std::string& title, GLFWmonitor* monitor)
 	: width_(width),
-	height_(height),
-	title_(title),
-	window_(glfwCreateWindow(width, height, title_.c_str(), nullptr, nullptr))
+	  height_(height),
+	  title_(title),
+	  window_(glfwCreateWindow(width, height, title_.c_str(), monitor, nullptr))
 {
 	// Window creation could fail
 	if (window_ == nullptr) {

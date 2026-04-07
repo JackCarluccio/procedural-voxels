@@ -5,7 +5,7 @@
 
 int main() {
 	try {
-		voxels::application::Application app(800, 600, "Voxels");
+		voxels::application::Application app("Voxels");
 		app.Init();
 		app.Run();
 	} catch (const std::exception& e) {

@@ -4,12 +4,13 @@
 #include <string>
 
 struct GLFWwindow;
+struct GLFWmonitor;
 
 namespace voxels::graphics {
 
 class Window {
 public:
-	explicit Window(int width, int height, const std::string& title);
+	explicit Window(int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
 	~Window();
 
 	// Windows own unique resources and therefore should not be copied
