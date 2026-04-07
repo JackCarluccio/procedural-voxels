@@ -47,6 +47,10 @@ public:
         SetBlock(GetIndex(x, y, z), block);
     }
 
+    glm::ivec2 GetPosition() const noexcept {
+        return position_;
+    }
+
     const std::unique_ptr<graphics::Mesh>& GetMesh() const noexcept {
         return mesh_;
     }

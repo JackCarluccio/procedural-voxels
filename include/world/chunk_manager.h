@@ -2,6 +2,7 @@
 #define VOXELS_WORLD_CHUNK_MANAGER_H_
 
 #include "world/chunk.h"
+#include "world/chunk_generator.h"
 #include "world/chunk_mesher.h"
 #include "util/ivec2_hash.h"
 
@@ -35,6 +36,7 @@ public:
 
 private:
     std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash> chunks_;
+    std::unique_ptr<ChunkGenerator> chunk_generator_;
     std::unique_ptr<ChunkMesher> chunk_mesher_;
 
     void GenerateChunk(const glm::ivec2& position);

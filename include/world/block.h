@@ -8,6 +8,8 @@ namespace voxels::world {
 enum class Block : uint8_t {
     Air = 0,
     Stone,
+    Dirt,
+    Grass,
 };
 
 } // namespace voxels::world
