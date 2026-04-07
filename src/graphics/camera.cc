@@ -8,7 +8,7 @@ namespace voxels::graphics {
 
 Camera::Camera(float fov, float aspect_ratio, float near_plane, float far_plane)
     : fov_(fov), aspect_ratio_(aspect_ratio), near_plane_(near_plane), far_plane_(far_plane),
-      position_(0.0f, 0.0f, 0.0f), pitch_(0.0f), yaw_(0.0f) {}
+      position_(0.0f, 100.0f, 0.0f), pitch_(0.0f), yaw_(0.0f) {}
 
 glm::mat4 Camera::GetViewMatrix() const noexcept {
     glm::vec3 forward;
