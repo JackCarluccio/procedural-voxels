@@ -9,6 +9,7 @@
 
 #include <glm/glm.hpp>
 
+#include <array>
 #include <memory>
 #include <unordered_map>
 
@@ -24,8 +25,10 @@ public:
     ChunkManager(ChunkManager&&) = delete;
     ChunkManager& operator=(ChunkManager&&) = delete;
 
+    void Init() const noexcept;
+
     bool HasChunk(const glm::ivec2& position) const noexcept;
-    bool HasNeighbors(const glm::ivec2& position) const noexcept;
+    bool HasCardinalNeighbors(const glm::ivec2& position) const noexcept;
 
     Chunk& GetChunk(const glm::ivec2& position) const;
 
@@ -40,6 +43,8 @@ private:
     std::unique_ptr<ChunkGenerator> chunk_generator_;
     std::unique_ptr<ChunkMesher> chunk_mesher_;
     std::unique_ptr<ChunkQueue> chunk_queue_;
+
+    std::array<const Chunk* const, 4> GetCardinalNeighborPointers(const glm::ivec2& position) const;
 
     void GenerateChunk(const glm::ivec2& position);
 };

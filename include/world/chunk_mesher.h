@@ -4,6 +4,7 @@
 #include "graphics/mesh.h"
 #include "world/chunk.h"
 
+#include <array>
 #include <memory>
 
 namespace voxels::world {
@@ -18,7 +19,9 @@ public:
     ChunkMesher(ChunkMesher&&) = delete;
     ChunkMesher& operator=(ChunkMesher&&) = delete;
 
-    std::unique_ptr<graphics::Mesh> MeshChunk(const Chunk& chunk);
+    void Init() const noexcept;
+
+    std::unique_ptr<graphics::Mesh> MeshChunk(const Chunk& chunk, const std::array<const Chunk* const, 4>& neighbors);
 };
     
 }

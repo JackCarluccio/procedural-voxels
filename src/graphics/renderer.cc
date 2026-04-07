@@ -4,6 +4,7 @@
 #include "graphics/camera.h"
 #include "graphics/mesh.h"
 #include "graphics/shader_program.h"
+#include "world/helper.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -60,9 +61,9 @@ void Renderer::Draw(const Camera* camera, const std::unordered_map<glm::ivec2, s
         glm::mat4 model = glm::translate(
             glm::mat4(1.0f),
             glm::vec3(
-                position.x * world::Chunk::SIZE,
+                position.x * world::CHUNK_SIZE,
                 0.0f,
-                position.y * world::Chunk::SIZE
+                position.y * world::CHUNK_SIZE
             )
         );
         shader_program->SetUniformMatrix4x4("model", glm::value_ptr(model));

@@ -3,26 +3,19 @@
 
 #include "graphics/mesh.h"
 #include "world/block.h"
+#include "world/helper.h"
 
 #include <array>
 #include <cstdint>
 #include <memory>
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace voxels::world {
 
 class Chunk {
 public:
-    static constexpr int SIZE = 16;
-    static constexpr int HEIGHT = 256;
-    static constexpr int BLOCKS_PER_SLICE = SIZE * SIZE;
-    static constexpr int BLOCKS_PER_CHUNK = BLOCKS_PER_SLICE * HEIGHT;
-
-    static constexpr int GetIndex(int x, int y, int z) noexcept {
-        return z + x * SIZE + y * BLOCKS_PER_SLICE;
-    }
-
     Chunk() = delete;
     explicit Chunk(const glm::ivec2& position);
 
@@ -36,7 +29,11 @@ public:
     }
 
     Block GetBlock(int x, int y, int z) const noexcept {
-        return GetBlock(GetIndex(x, y, z));
+        return GetBlock(ToIndex(x, y, z));
+    }
+
+    Block GetBlock(const glm::ivec3& position) const noexcept {
+        return GetBlock(ToIndex(position));
     }
 
     void SetBlock(int index, Block block) noexcept {
@@ -44,7 +41,11 @@ public:
     }
 
     void SetBlock(int x, int y, int z, Block block) noexcept {
-        SetBlock(GetIndex(x, y, z), block);
+        SetBlock(ToIndex(x, y, z), block);
+    }
+
+    void SetBlock(const glm::ivec3& position, Block block) noexcept {
+        SetBlock(ToIndex(position), block);
     }
 
     glm::ivec2 GetPosition() const noexcept {
