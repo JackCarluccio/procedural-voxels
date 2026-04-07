@@ -101,6 +101,11 @@ void ShaderProgram::Use() const noexcept {
     glUseProgram(id_);
 }
 
+void ShaderProgram::SetUniform2i(const std::string& name, int v0, int v1) const noexcept {
+    int location = glGetUniformLocation(id_, name.c_str());
+    glUniform2i(location, v0, v1);
+}
+
 void ShaderProgram::SetUniformMatrix4x4(const std::string& name, const float* value) const noexcept {
     int location = glGetUniformLocation(id_, name.c_str());
     glUniformMatrix4fv(location, 1, GL_FALSE, value);

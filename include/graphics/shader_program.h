@@ -20,6 +20,7 @@ public:
     ShaderProgram& operator=(ShaderProgram&& other) noexcept;
 
     void Use() const noexcept;
+    void SetUniform2i(const std::string& name, int v0, int v1) const noexcept;
     void SetUniformMatrix4x4(const std::string& name, const float* value) const noexcept;
 
 private:
