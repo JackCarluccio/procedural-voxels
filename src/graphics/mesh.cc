@@ -18,4 +18,9 @@ void Mesh::LinkAttribute(unsigned int layout, int size, unsigned int type, int s
 	vertex_array_.EnableAttributeLayout(layout);
 }
 
+void Mesh::LinkAttributeI(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const {
+	vertex_array_.LinkAttributeI(vertex_buffer_, layout, size, type, stride, offset);
+	vertex_array_.EnableAttributeLayout(layout);
+}
+
 } // namespace voxels::graphics

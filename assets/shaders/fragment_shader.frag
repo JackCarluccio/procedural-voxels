@@ -1,14 +1,11 @@
 #version 460 core
 
-in vec3 FragPos;
+in vec2 TexCoord;
 
 out vec4 FragColor;
 
+uniform sampler2D texture_atlas;
+
 void main() {
-    FragColor = vec4(
-        mod(FragPos.x / 4.0, 1.0),
-        mod(FragPos.y / 4.0, 1.0),
-        mod(FragPos.z / 4.0, 1.0),
-        1.0
-    );
+    FragColor = texture(texture_atlas, TexCoord);
 }

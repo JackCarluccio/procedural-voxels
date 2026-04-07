@@ -8,10 +8,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb_image.h>
 
 #include <memory>
 
+namespace {
+
+unsigned int texture_atlas_id;
 std::unique_ptr<voxels::graphics::ShaderProgram> shader_program;
+
+}
 
 namespace voxels::graphics {
 
@@ -20,6 +26,16 @@ void Renderer::Init() {
         "assets/shaders/vertex_shader.vert",
         "assets/shaders/fragment_shader.frag"
     );
+
+    int width, height, channels;
+    unsigned char* data = stbi_load("assets/textures/texture_atlas.png", &width, &height, &channels, 0);
+    glGenTextures(1, &texture_atlas_id);
+    glBindTexture(GL_TEXTURE_2D, texture_atlas_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    stbi_image_free(data);
 }
 
 void Renderer::Draw(const Camera* camera, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks) {
@@ -32,6 +48,8 @@ void Renderer::Draw(const Camera* camera, const std::unordered_map<glm::ivec2, s
     shader_program->Use();
     shader_program->SetUniformMatrix4x4("view", glm::value_ptr(view));
     shader_program->SetUniformMatrix4x4("projection", glm::value_ptr(projection));
+
+    glBindTexture(GL_TEXTURE_2D, texture_atlas_id);
 
     for (const auto& [position, chunk] : chunks) {
         const std::unique_ptr<graphics::Mesh>& chunk_mesh = chunk->GetMesh();
