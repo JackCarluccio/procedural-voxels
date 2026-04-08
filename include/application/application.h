@@ -42,6 +42,7 @@ public:
 
 private:
     int frame_;
+    std::chrono::steady_clock::time_point start_time_;
     std::chrono::steady_clock::time_point last_frame_time_;
     bool is_running_;
 

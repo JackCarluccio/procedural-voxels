@@ -51,7 +51,7 @@ void InputManager::ProcessCameraMovement(float delta_time) {
         return;
     }
 
-    move_direction = glm::normalize(move_direction) * (delta_time * 5.0f);
+    move_direction = glm::normalize(move_direction) * (delta_time * 16.0f);
     camera_.SetPosition(camera_.GetPosition() + move_direction);
 }
 

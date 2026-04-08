@@ -8,6 +8,7 @@
 #include "world/chunk_manager.h"
 
 #include <stdexcept>
+#include <iostream>
 
 namespace voxels::application {
 
@@ -37,6 +38,7 @@ Application::Application(const std::string& title)
     glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
     window_->MakeContextCurrent();
+    glfwSwapInterval(0);
 
     // Load OpenGL functions using GLAD
     if (gladLoadGL(glfwGetProcAddress) == 0) {
@@ -47,7 +49,7 @@ Application::Application(const std::string& title)
         glm::radians(45.0f),
         static_cast<float>(mode->width) / static_cast<float>(mode->height),
         0.1f,
-        500.0f
+        1000.0f
     );
 
     renderer_ = std::make_unique<graphics::Renderer>();
@@ -61,22 +63,33 @@ Application::~Application() {
 
 void Application::Init() {
     renderer_->Init();
+    chunk_manager_->Init();
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
     glEnable(GL_DEPTH_TEST);
+
+    start_time_ = std::chrono::steady_clock::now();
 }
 
 void Application::Run() {
     while (is_running_ && !window_->ShouldClose()) {
         std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
         float delta_time = static_cast<float>((now - last_frame_time_).count()) * 1e-9f;
+        
+        frame_++;
         last_frame_time_ = now;
 
         Update(delta_time);
         Draw();
+
+        if (frame_ % 100 == 0) {
+            std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
+            float total_time = static_cast<float>((current_time - start_time_).count()) * 1e-9f;
+            std::cout << "Avg FPS: " << frame_ / total_time << "\n" << std::endl;
+        }
     }
 }
 

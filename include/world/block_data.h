@@ -2,6 +2,7 @@
 #define VOXELS_WORLD_BLOCK_DATA_H_
 
 #include "world/block.h"
+#include "world/face.h"
 
 #include <cstdint>
 
@@ -20,15 +21,15 @@ constexpr BlockData block_data[256] = {
     {2, 3, 1}, // Grass
 };
 
-inline constexpr int GetTextureIndex(const BlockData& data, int face) noexcept {
+constexpr uint8_t GetTextureIndex(const BlockData& data, Face face) noexcept {
     switch(face) {
-        case 4: return data.bottom_texture_index;
-        case 5: return data.top_texture_index;
+        case Face::NegY: return data.bottom_texture_index;
+        case Face::PosY: return data.top_texture_index;
         default: return data.side_texture_index;
     }
 }
 
-inline constexpr int GetTextureIndex(Block block, int face) noexcept {
+constexpr uint8_t GetTextureIndex(Block block, Face face) noexcept {
     return GetTextureIndex(block_data[static_cast<int>(block)], face);
 }
 
