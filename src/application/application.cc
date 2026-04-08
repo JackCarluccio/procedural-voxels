@@ -49,7 +49,7 @@ Application::Application(const std::string& title)
         glm::radians(45.0f),
         static_cast<float>(mode->width) / static_cast<float>(mode->height),
         0.1f,
-        1000.0f
+        5000.0f
     );
 
     renderer_ = std::make_unique<graphics::Renderer>();
