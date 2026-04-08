@@ -59,7 +59,7 @@ void Renderer::Draw(const Camera* camera, const std::unordered_map<glm::ivec2, s
         shader_program->SetUniform2i("chunk_world_position", position.x * world::CHUNK_SIZE, position.y * world::CHUNK_SIZE);
 
         chunk_mesh->Bind();
-        glDrawElements(GL_TRIANGLES, chunk_mesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, chunk_mesh->GetIndexCount(), GL_UNSIGNED_SHORT, nullptr);
     }
 }
 

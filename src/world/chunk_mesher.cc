@@ -15,7 +15,7 @@ namespace {
 using namespace voxels::world;
 
 constexpr uint32_t VertexIndex(int x, int y, int z) noexcept {
-    return z + x * 17 + y * 17 * 17;
+    return z + x * 32 + y * 32 * 32;
 }
 
 struct ExteriorBlockFaceBlueprint {
@@ -50,12 +50,12 @@ constexpr uint32_t face_vertex_offsets[6][4] = {
     {VertexIndex(0, 1, 0), VertexIndex(0, 1, 1), VertexIndex(1, 1, 1), VertexIndex(1, 1, 0)}, // +Y
 };
 
-void AddFace(std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices, const glm::ivec3& cell, Face face, Block block) noexcept {
+void AddFace(std::vector<uint32_t>& vertices, std::vector<uint16_t>& indices, const glm::ivec3& cell, Face face, Block block) noexcept {
     int vertex_index_start = static_cast<int>(vertices.size());
     uint8_t texture_index = voxels::world::GetTextureIndex(block, face);
 
     for (int i = 0; i < 4; i++) {
-        uint32_t vertex_data = texture_index << 17;
+        uint32_t vertex_data = texture_index << 19;
         vertex_data |= VertexIndex(cell.x, cell.y, cell.z) + face_vertex_offsets[static_cast<int>(face)][i];
         vertices.push_back(vertex_data);
     }
@@ -68,7 +68,7 @@ void AddFace(std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices, co
     indices.push_back(vertex_index_start + 3);
 }
 
-void MeshInterior(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices) noexcept {
+void MeshInterior(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint16_t>& indices) noexcept {
     for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
         for (int x = 1; x < CHUNK_SIZE - 1; x++) {
             for (int z = 1; z < CHUNK_SIZE - 1; z++) {
@@ -92,7 +92,7 @@ void MeshInterior(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vect
     }
 }
 
-void MeshExteriorFaces(const Chunk& thisChunk, const Chunk* const thatChunk, std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices, Face face) noexcept {
+void MeshExteriorFaces(const Chunk& thisChunk, const Chunk* const thatChunk, std::vector<uint32_t>& vertices, std::vector<uint16_t>& indices, Face face) noexcept {
     for (const auto& blueprint : exterior_block_face_blueprints[static_cast<int>(face)]) {
         Block this_block = thisChunk.GetBlock(blueprint.this_block_index);
         if (this_block == Block::Air) {
@@ -108,7 +108,7 @@ void MeshExteriorFaces(const Chunk& thisChunk, const Chunk* const thatChunk, std
     }
 }
 
-void MeshExteriorBlockFaces(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices) noexcept {
+void MeshExteriorBlockFaces(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint16_t>& indices) noexcept {
     for (const auto& blueprint : exterior_block_blueprints) {
         Block this_block = chunk.GetBlock(blueprint.this_block_index);
         if (this_block == Block::Air) {
@@ -127,7 +127,7 @@ void MeshExteriorBlockFaces(const Chunk& chunk, std::vector<uint32_t>& vertices,
     }
 }
 
-void MeshTopFaces(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint32_t>& indices) noexcept {
+void MeshTopFaces(const Chunk& chunk, std::vector<uint32_t>& vertices, std::vector<uint16_t>& indices) noexcept {
     for (int z = 0; z < CHUNK_SIZE; z++) {
         for (int x = 0; x < CHUNK_SIZE; x++) {
             Block block = chunk.GetBlock(x, CHUNK_HEIGHT - 1, z);
@@ -214,7 +214,7 @@ void ChunkMesher::Init() const noexcept {
 
 std::unique_ptr<graphics::Mesh> ChunkMesher::MeshChunk(const Chunk& chunk, const std::array<const Chunk* const, 4>& neighbors) {
     std::vector<uint32_t> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<uint16_t> indices;
 
     MeshInterior(chunk, vertices, indices);
     MeshExteriorBlockFaces(chunk, vertices, indices);
@@ -228,7 +228,7 @@ std::unique_ptr<graphics::Mesh> ChunkMesher::MeshChunk(const Chunk& chunk, const
         vertices.data(),
         vertices.size() * sizeof(uint32_t),
         indices.data(),
-        indices.size() * sizeof(uint32_t),
+        indices.size() * sizeof(uint16_t),
         static_cast<int>(indices.size())
     );
 
