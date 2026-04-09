@@ -84,12 +84,6 @@ void Application::Run() {
 
         Update(delta_time);
         Draw();
-
-        if (frame_ % 100 == 0) {
-            std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-            float total_time = static_cast<float>((current_time - start_time_).count()) * 1e-9f;
-            std::cout << "Avg FPS: " << frame_ / total_time << "\n" << std::endl;
-        }
     }
 }
 

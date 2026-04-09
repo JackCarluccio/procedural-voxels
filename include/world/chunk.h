@@ -17,7 +17,8 @@ namespace voxels::world {
 class Chunk {
 public:
     Chunk() = delete;
-    explicit Chunk(const glm::ivec2& position);
+    // Intentionally do not initialize blocks_ since the ChunkGenerator will fill it
+    explicit Chunk(const glm::ivec2& position) { position_ = position; };
 
     Chunk(const Chunk&) = delete;
     Chunk& operator=(const Chunk&) = delete;
@@ -46,6 +47,10 @@ public:
 
     void SetBlock(const glm::ivec3& position, Block block) noexcept {
         SetBlock(ToIndex(position), block);
+    }
+
+    Block* GetBlocksPointer() noexcept {
+        return blocks_.data();
     }
 
     glm::ivec2 GetPosition() const noexcept {
