@@ -7,14 +7,19 @@ class PerlinNoise2d {
 public:
     explicit PerlinNoise2d(float frequency, int octaves, float persistence, float lacunarity);
 
+    PerlinNoise2d(const PerlinNoise2d&) = default;
+    PerlinNoise2d& operator=(const PerlinNoise2d&) = default;
+    PerlinNoise2d(PerlinNoise2d&&) = default;
+    PerlinNoise2d& operator=(PerlinNoise2d&&) = default;
+
     float Sample(float x, float y) const noexcept;
 
 private:
-    float frequency_;
-    int octaves_;
-    float persistence_;
-    float lacunarity_;
-    float max_noise_;
+    const float frequency_;
+    const int octaves_;
+    const float persistence_;
+    const float lacunarity_;
+    const float max_noise_;
 
 };
 
