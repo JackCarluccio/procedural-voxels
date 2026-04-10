@@ -13,6 +13,7 @@ public:
     PerlinNoise2d& operator=(PerlinNoise2d&&) = default;
 
     float Sample(float x, float y) const noexcept;
+    void SampleMap(float* map, float x_offset, float y_offset) const noexcept;
 
 private:
     const float frequency_;

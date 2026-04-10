@@ -15,7 +15,7 @@ namespace {
 
 constexpr int BASE_HEIGHT = 4.0f;
 constexpr float CONTINENTALNESS_AMPLITUDE = 240.0f;
-generation::PerlinNoise2d continentalness_noise_sampler(0.0125f / 4.0f, 5, 0.5f, 2.0f);
+generation::PerlinNoise2d continentalness_noise_sampler(1.0f / 512.0f, 6, 0.5f, 2.0f);
 generation::LinearSpline continentalness_spline({
     {-1.00f, 0.00f},
     {-0.15f, 0.40f},
@@ -29,11 +29,15 @@ void GenerateHeightMap(const Chunk& chunk, int* height_map) {
     int chunk_world_x = chunk.GetPosition().x * CHUNK_SIZE;
     int chunk_world_z = chunk.GetPosition().y * CHUNK_SIZE;
 
+    // create noise map initialized to all zeroes
+    float noise_map[BLOCKS_PER_CHUNK_SLICE] = {0.0f};
+    continentalness_noise_sampler.SampleMap(noise_map, chunk_world_x, chunk_world_z);
+
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
-            float continentalness_noise = continentalness_noise_sampler.Sample(chunk_world_x + x, chunk_world_z + z);
+            float noise = noise_map[z + x * CHUNK_SIZE];
             int height = static_cast<int>(
-                continentalness_spline.GetValue(continentalness_noise) * CONTINENTALNESS_AMPLITUDE
+                continentalness_spline.GetValue(noise) * CONTINENTALNESS_AMPLITUDE
             ) + BASE_HEIGHT;
 
             height_map[z + x * CHUNK_SIZE] = height;

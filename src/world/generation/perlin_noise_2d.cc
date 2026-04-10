@@ -1,5 +1,7 @@
 #include "world/generation/perlin_noise_2d.h"
 
+#include "world/helper.h"
+
 #include <cmath>
 #include <cstdint>
 
@@ -74,10 +76,10 @@ constexpr float SampleNoise2d(float x, float y) noexcept {
     float t_y = y - y_0;
 
     // Dotted gradients at the corners of the cell
-    float n_0 = DotGridGradient(x_0, y_0,        t_x,        t_y);
-    float n_1 = DotGridGradient(x_1, y_0, 1.0f - t_x,        t_y);
-    float n_2 = DotGridGradient(x_0, y_1,        t_x, 1.0f - t_y);
-    float n_3 = DotGridGradient(x_1, y_1, 1.0f - t_x, 1.0f - t_y);
+    float n_0 = DotGridGradient(x_0, y_0, t_x       , t_y       );
+    float n_1 = DotGridGradient(x_1, y_0, t_x - 1.0f, t_y       );
+    float n_2 = DotGridGradient(x_0, y_1, t_x       , t_y - 1.0f);
+    float n_3 = DotGridGradient(x_1, y_1, t_x - 1.0f, t_y - 1.0f);
 
     // Interpolation weights
     float weight_x = (3.0f - t_x * 2.0f) * t_x * t_x;
@@ -88,6 +90,59 @@ constexpr float SampleNoise2d(float x, float y) noexcept {
 
     // Interpolate between the top and bottom gradients
     return (i_1 - i_0) * weight_y + i_0;
+}
+
+struct SampleMap2dParams {
+    float* map;
+    float frequency, amplitude;
+    float x_offset, y_offset;
+    int index_x_offset, index_y_offset;
+    int samples_per_axis;
+};
+
+constexpr void SampleMap2d(const SampleMap2dParams& params) noexcept {
+    float cell_origin_x = std::floor(params.x_offset);
+    float cell_origin_y = std::floor(params.y_offset);
+
+    float cell_origin_offset_x = params.x_offset - cell_origin_x;
+    float cell_origin_offset_y = params.y_offset - cell_origin_y;
+
+    int cell_origin_x_int = static_cast<int>(cell_origin_x);
+    int cell_origin_y_int = static_cast<int>(cell_origin_y);
+
+    const Point g_0 = Gradient(cell_origin_x_int    , cell_origin_y_int    );
+    const Point g_1 = Gradient(cell_origin_x_int + 1, cell_origin_y_int    );
+    const Point g_2 = Gradient(cell_origin_x_int    , cell_origin_y_int + 1);
+    const Point g_3 = Gradient(cell_origin_x_int + 1, cell_origin_y_int + 1);
+
+    for (int index_x = 0; index_x < params.samples_per_axis; index_x++) {
+        for (int index_y = 0; index_y < params.samples_per_axis; index_y++) {
+
+            // Distance to top-left grid point
+            float t_x = cell_origin_offset_x + index_x * params.frequency;
+            float t_y = cell_origin_offset_y + index_y * params.frequency;
+
+            // Dotted gradients at the corners of the cell
+            float n_0 = (t_x       ) * g_0.x + (t_y       ) * g_0.y;
+            float n_1 = (t_x - 1.0f) * g_1.x + (t_y       ) * g_1.y;
+            float n_2 = (t_x       ) * g_2.x + (t_y - 1.0f) * g_2.y;
+            float n_3 = (t_x - 1.0f) * g_3.x + (t_y - 1.0f) * g_3.y;
+
+            // Interpolation weights
+            float weight_x = (3.0f - t_x * 2.0f) * t_x * t_x;
+            float weight_y = (3.0f - t_y * 2.0f) * t_y * t_y;
+
+            float i_0 = (n_1 - n_0) * weight_x + n_0; // Interpolation between gradients at the top of the cell
+            float i_1 = (n_3 - n_2) * weight_x + n_2; // Interpolation between gradients at the bottom of the cell
+
+            // Interpolate between the top and bottom gradients
+            float noise = ((i_1 - i_0) * weight_y + i_0) * params.amplitude;
+
+            params.map[
+                (index_y + params.index_y_offset) + (index_x + params.index_x_offset) * voxels::world::CHUNK_SIZE
+            ] += noise;
+        }
+    }
 }
 
 } // namespace
@@ -113,6 +168,48 @@ float PerlinNoise2d::Sample(float x, float y) const noexcept {
     }
 
     return noise / max_noise_;
+}
+
+void PerlinNoise2d::SampleMap(float* map, float x, float y) const noexcept {
+    SampleMap2dParams params{
+        .map = map,
+        .frequency = frequency_,
+        .amplitude = 1.0f / max_noise_,
+        .x_offset = 0.0f,
+        .y_offset = 0.0f,
+        .index_x_offset = 0,
+        .index_y_offset = 0,
+        .samples_per_axis = 0
+    };
+
+    for (int i = 0; i < octaves_; i++) {
+        // High frequencies require sampling multiple lattice cells
+        int cells_per_axis = CHUNK_SIZE * params.frequency;
+        if (cells_per_axis == 0) {
+            // Frequency is low enough, sample a single lattice cell
+            params.x_offset = x * params.frequency;
+            params.y_offset = y * params.frequency;
+            params.index_x_offset = 0;
+            params.index_y_offset = 0;
+            params.samples_per_axis = CHUNK_SIZE;
+            SampleMap2d(params);
+        } else {
+            // Frequency is too high, so we need to sample multiple lattice cells and stitch them together
+            for (int cell_offset_x = 0; cell_offset_x < cells_per_axis; cell_offset_x++) {
+                for (int cell_offset_y = 0; cell_offset_y < cells_per_axis; cell_offset_y++) {
+                    params.x_offset = x * params.frequency + cell_offset_x;
+                    params.y_offset = y * params.frequency + cell_offset_y;
+                    params.index_x_offset = (CHUNK_SIZE / cells_per_axis) * cell_offset_x;
+                    params.index_y_offset = (CHUNK_SIZE / cells_per_axis) * cell_offset_y;
+                    params.samples_per_axis = CHUNK_SIZE / cells_per_axis;
+                    SampleMap2d(params);
+                }
+            }
+        }
+
+        params.frequency *= lacunarity_;
+        params.amplitude *= persistence_;
+    }
 }
 
 } // namespace voxels::world::generation
