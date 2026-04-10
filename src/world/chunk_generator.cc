@@ -25,12 +25,15 @@ generation::LinearSpline continentalness_spline({
     {+1.00f, 1.00f},
 });
 
-void GenerateHeightMap(const Chunk& chunk, int* height_map) {
+int height_map[BLOCKS_PER_CHUNK_SLICE];
+float noise_map[BLOCKS_PER_CHUNK_SLICE];
+
+void GenerateHeightMap(const Chunk& chunk) {
     int chunk_world_x = chunk.GetPosition().x * CHUNK_SIZE;
     int chunk_world_z = chunk.GetPosition().y * CHUNK_SIZE;
 
-    // create noise map initialized to all zeroes
-    float noise_map[BLOCKS_PER_CHUNK_SLICE] = {0.0f};
+    // noise_map must be cleared before each use since SampleMap adds to the values in the map rather than overwriting them
+    std::memset(noise_map, 0, sizeof(noise_map));
     continentalness_noise_sampler.SampleMap(noise_map, chunk_world_x, chunk_world_z);
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -45,7 +48,7 @@ void GenerateHeightMap(const Chunk& chunk, int* height_map) {
     }
 }
 
-void FillChunk(Chunk& chunk, int* height_map) {
+void FillChunk(Chunk& chunk) {
     // The layout of blocks in memory is [y][x][z], so we can memset entire horizontal slices at a time
     // This allows us to vectorize the filling of all blocks below min_height and all above max_height
     int min_height = *std::min_element(height_map, height_map + BLOCKS_PER_CHUNK_SLICE);
@@ -84,9 +87,8 @@ void FillChunk(Chunk& chunk, int* height_map) {
 } // namespace
 
 void ChunkGenerator::Generate(Chunk& chunk) {
-    int height_map[BLOCKS_PER_CHUNK_SLICE];
-    GenerateHeightMap(chunk, height_map);
-    FillChunk(chunk, height_map);
+    GenerateHeightMap(chunk);
+    FillChunk(chunk);
 }
 
 } // namespace voxels::world
