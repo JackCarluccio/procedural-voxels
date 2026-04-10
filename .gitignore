@@ -18,3 +18,7 @@ external/glm/util
 
 # System and IDE files
 *.save
+
+# Performance profiling data
+perf.data
+perf.data.old
