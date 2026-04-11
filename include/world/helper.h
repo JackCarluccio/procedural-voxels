@@ -14,13 +14,17 @@ namespace voxels::world {
     constexpr int BLOCKS_PER_CHUNK_INTERIOR = (CHUNK_SIZE - 2) * (CHUNK_SIZE - 2) * (CHUNK_HEIGHT - 2);
     constexpr int BLOCKS_PER_CHUNK_EXTERIOR = BLOCKS_PER_CHUNK - BLOCKS_PER_CHUNK_INTERIOR;
 
+    constexpr int STRIDE_Z = 1;
+    constexpr int STRIDE_X = CHUNK_SIZE;
+    constexpr int STRIDE_Y = BLOCKS_PER_CHUNK_SLICE;
+
     constexpr int CARDINAL_INDEX_OFFSETS[6] = {
-        -1,                 // -Z
-        +1,                 // +Z
-        -CHUNK_SIZE,        // -X
-        +CHUNK_SIZE,        // +X
-        -BLOCKS_PER_CHUNK_SLICE,  // -Y
-        +BLOCKS_PER_CHUNK_SLICE   // +Y
+        -STRIDE_Z,
+        +STRIDE_Z,
+        -STRIDE_X,
+        +STRIDE_X,
+        -STRIDE_Y,
+        +STRIDE_Y,
     };
 
     constexpr glm::ivec3 CARDINAL_VECTOR_OFFSETS[6] = {
@@ -39,8 +43,10 @@ namespace voxels::world {
         glm::ivec2(+1, +0)  // +X
     };
 
+    extern int INNER_INDICES[BLOCKS_PER_CHUNK_INTERIOR];
+
     constexpr int ToIndex(int x, int y, int z) {
-        return z + x * CHUNK_SIZE + y * BLOCKS_PER_CHUNK_SLICE;
+        return z + x * STRIDE_X + y * STRIDE_Y;
     }
 
     constexpr int ToIndex(const glm::ivec3& position) {
@@ -48,9 +54,9 @@ namespace voxels::world {
     }
 
     constexpr glm::ivec3 ToCell(int index) {
-        int z = index % CHUNK_SIZE;
-        int x = (index / CHUNK_SIZE) % CHUNK_SIZE;
-        int y = index / BLOCKS_PER_CHUNK_SLICE;
+        int z = index % STRIDE_X;
+        int x = (index % STRIDE_Y) / STRIDE_X;
+        int y = index / STRIDE_Y;
         return glm::ivec3(x, y, z);
     }
 
@@ -86,6 +92,12 @@ namespace voxels::world {
 
     constexpr bool IsInterior(const glm::ivec3& position) {
         return IsInterior(position.x, position.y, position.z);
+    }
+
+    namespace helper {
+    
+    void Init() noexcept;
+
     }
 
 }

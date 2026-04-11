@@ -16,6 +16,7 @@ ChunkManager::ChunkManager()
 {}
 
 void ChunkManager::Init() const noexcept {
+    helper::Init();
     chunk_mesher_->Init();
 }
 
@@ -54,7 +55,7 @@ void ChunkManager::Update(const glm::vec3& player_position) noexcept {
     if (chunk_queue_->IsEmpty()) {
         return;
     }
-
+    
     glm::ivec2 position = chunk_queue_->Pop();
     GenerateChunk(position);
 }
