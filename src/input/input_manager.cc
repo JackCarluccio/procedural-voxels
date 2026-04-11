@@ -14,7 +14,7 @@ InputManager::InputManager(GLFWwindow* window, graphics::Camera& camera) : windo
 
 void InputManager::Update(float delta_time) {
     ProcessCameraMovement(delta_time);
-    ProcessCameraRotation(delta_time);
+    ProcessCameraRotation();
 }
 
 void InputManager::ProcessCameraMovement(float delta_time) {
@@ -55,15 +55,15 @@ void InputManager::ProcessCameraMovement(float delta_time) {
     camera_.SetPosition(camera_.GetPosition() + move_direction);
 }
 
-void InputManager::ProcessCameraRotation(float delta_time) {
+void InputManager::ProcessCameraRotation() {
     double cursor_x, cursor_y;
     glfwGetCursorPos(window_, &cursor_x, &cursor_y);
 
     float x_delta = static_cast<float>(cursor_x - last_cursor_x_);
     float y_delta = static_cast<float>(last_cursor_y_ - cursor_y);
 
-    camera_.SetYaw(camera_.GetYaw() + x_delta * delta_time * 0.25f);
-    camera_.SetPitch(camera_.GetPitch() + y_delta * delta_time * 0.25f);
+    camera_.SetYaw(camera_.GetYaw() + x_delta * 0.0015f);
+    camera_.SetPitch(camera_.GetPitch() + y_delta * 0.0015f);
 
     last_cursor_x_ = cursor_x;
     last_cursor_y_ = cursor_y;
