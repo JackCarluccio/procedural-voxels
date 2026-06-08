@@ -1,6 +1,7 @@
 #include "world/chunk_generator.h"
 
 #include "world/block.h"
+#include "world/chunk_stage.h"
 #include "world/generation/linear_spline.h"
 #include "world/generation/perlin_noise_2d.h"
 #include "world/helper.h"
@@ -86,9 +87,14 @@ void FillChunk(Chunk& chunk) {
 
 } // namespace
 
-void ChunkGenerator::Generate(Chunk& chunk) {
+void ChunkGenerator::Shape(Chunk& chunk) const noexcept {
     GenerateHeightMap(chunk);
     FillChunk(chunk);
+}
+
+// TODO
+void ChunkGenerator::Decorate(Chunk& chunk) const noexcept {
+    (void)chunk;
 }
 
 } // namespace voxels::world

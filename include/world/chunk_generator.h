@@ -15,7 +15,8 @@ public:
     ChunkGenerator(ChunkGenerator&&) = delete;
     ChunkGenerator& operator=(ChunkGenerator&&) = delete;
 
-    void Generate(Chunk& chunk);
+    void Shape(Chunk& chunk) const noexcept;
+    void Decorate(Chunk& chunk) const noexcept;
 };
 
 }
