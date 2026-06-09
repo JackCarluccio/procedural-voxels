@@ -10,6 +10,8 @@ enum class Block : uint8_t {
     Stone,
     Dirt,
     Grass,
+    OakLog,
+    OakLeaves,
 };
 
 } // namespace voxels::world

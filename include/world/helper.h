@@ -28,19 +28,29 @@ namespace voxels::world {
     };
 
     constexpr glm::ivec3 CARDINAL_VECTOR_OFFSETS[6] = {
-        {0, 0, -1}, // -Z
-        {0, 0, +1}, // +Z
-        {-1, 0, 0}, // -X
-        {+1, 0, 0}, // +X
-        {0, -1, 0}, // -Y
-        {0, +1, 0}  // +Y
+        { 0,  0, -1}, // -Z
+        { 0,  0,  1}, // +Z
+        {-1,  0,  0}, // -X
+        { 1,  0,  0}, // +X
+        { 0, -1,  0}, // -Y
+        { 0,  1,  0}, // +Y
     };
 
-    constexpr glm::ivec2 CARDINAL_CHUNK_OFFSETS[4] = {
-        glm::ivec2(+0, -1), // -Z
-        glm::ivec2(+0, +1), // +Z
-        glm::ivec2(-1, +0), // -X
-        glm::ivec2(+1, +0)  // +X
+    constexpr glm::ivec2 CHUNK_OFFSETS[8] = {
+        glm::ivec2( 1,  0),
+        glm::ivec2( 1,  1),
+        glm::ivec2( 0,  1),
+        glm::ivec2(-1,  1),
+        glm::ivec2(-1,  0),
+        glm::ivec2(-1, -1),
+        glm::ivec2( 0, -1),
+        glm::ivec2( 1, -1),
+    };
+    constexpr glm::ivec2 CHUNK_CARDINAL_OFFSETS[4] = {
+        glm::ivec2( 0, -1), // -Z
+        glm::ivec2( 0,  1), // +Z
+        glm::ivec2(-1,  0), // -X
+        glm::ivec2( 1,  0), // +X
     };
 
     extern int INNER_INDICES[BLOCKS_PER_CHUNK_INTERIOR];
