@@ -5,6 +5,7 @@
 #include "world/chunk_generator.h"
 #include "world/chunk_mesher.h"
 #include "world/chunk_queue.h"
+#include "world/chunk_region.h"
 #include "util/ivec2_hash.h"
 
 #include <glm/glm.hpp>
@@ -29,9 +30,11 @@ public:
     void Init() const noexcept;
 
     bool HasChunk(const glm::ivec2& position) const noexcept;
-    bool HasCardinalNeighbors(const glm::ivec2& position) const noexcept;
 
     Chunk& GetChunk(const glm::ivec2& position) const;
+
+    ChunkRegion GetChunkRegion(const glm::ivec2& position) const noexcept;
+    ChunkRegion GetChunkRegion(const Chunk& chunk) const noexcept;
 
     void Update(const glm::vec3& player_position) noexcept;
 

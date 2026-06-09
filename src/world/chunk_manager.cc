@@ -7,7 +7,7 @@
 #include <cmath>
 #include <tuple>
 #include <utility>
-#include <iostream>
+
 namespace voxels::world {
 
 ChunkManager::ChunkManager()
@@ -25,16 +25,20 @@ bool ChunkManager::HasChunk(const glm::ivec2& position) const noexcept {
     return chunks_.find(position) != chunks_.end();
 }
 
-bool ChunkManager::HasCardinalNeighbors(const glm::ivec2& position) const noexcept {
-    return
-        HasChunk(position + CHUNK_CARDINAL_OFFSETS[0]) &&
-        HasChunk(position + CHUNK_CARDINAL_OFFSETS[1]) &&
-        HasChunk(position + CHUNK_CARDINAL_OFFSETS[2]) &&
-        HasChunk(position + CHUNK_CARDINAL_OFFSETS[3]);
-}
-
 Chunk& ChunkManager::GetChunk(const glm::ivec2& position) const {
     return *chunks_.at(position);
+}
+
+ChunkRegion ChunkManager::GetChunkRegion(const glm::ivec2& position) const noexcept {
+    return ChunkRegion({{
+        {{chunks_.find(position + glm::ivec2(-1, -1))->second.get(), chunks_.find(position + glm::ivec2(-1, 0))->second.get(), chunks_.find(position + glm::ivec2(-1, 1))->second.get()}},
+        {{chunks_.find(position + glm::ivec2( 0, -1))->second.get(), chunks_.find(position                    )->second.get(), chunks_.find(position + glm::ivec2( 0, 1))->second.get()}},
+        {{chunks_.find(position + glm::ivec2( 1, -1))->second.get(), chunks_.find(position + glm::ivec2( 1, 0))->second.get(), chunks_.find(position + glm::ivec2( 1, 1))->second.get()}}
+    }});
+}
+
+ChunkRegion ChunkManager::GetChunkRegion(const Chunk& chunk) const noexcept {
+    return GetChunkRegion(chunk.GetPosition());
 }
 
 void ChunkManager::Update(const glm::vec3& player_position) noexcept {
@@ -110,7 +114,8 @@ void ChunkManager::ShapeChunk(Chunk& chunk) noexcept {
 }
 
 void ChunkManager::DecorateChunk(Chunk& chunk) noexcept {
-    chunk_generator_->Decorate(chunk);
+    ChunkRegion chunk_region = GetChunkRegion(chunk);
+    chunk_generator_->Decorate(chunk, chunk_region);
     chunk.SetStage(ChunkStage::Decorated);
 
     if (IsMeshable(chunk)) {

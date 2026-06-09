@@ -19,6 +19,8 @@ constexpr BlockData block_data[256] = {
     {0, 0, 0}, // Stone
     {1, 1, 1}, // Dirt
     {2, 3, 1}, // Grass
+    {4, 5, 5}, // Oak Log
+    {6, 6, 6}, // Oak Leaves
 };
 
 constexpr uint8_t GetTextureIndex(const BlockData& data, Face face) noexcept {
