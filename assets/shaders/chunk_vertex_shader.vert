@@ -5,22 +5,15 @@ layout (location = 0) in uint vertex_data;
 uniform ivec2 chunk_world_position;
 uniform mat4 proj_view;
 
-out vec2 TexCoord;
-
-// const vec2 vertex_uvs[4] = vec2[](
-//     vec2(0.0f / 16.0f, 1.0f / 16.0f),
-//     vec2(1.0f / 16.0f, 1.0f / 16.0f),
-//     vec2(1.0f / 16.0f, 0.0f / 16.0f),
-//     vec2(0.0f / 16.0f, 0.0f / 16.0f)
-// );
+out vec3 TexCoord;
 
 void main() {
-    uint texture_index = vertex_data >> 19;
     int vertex_index = int(vertex_data & 0x3FFFF);
 
-    int z = vertex_index & 0x1F; // % 32
-    int x = (vertex_index >> 5) & 0x1F; // / 32 % 32
-    int y = vertex_index >> 10; // / (32 * 32)
+    // Use stride of 32 to encode x, z even though they're within [0, 16] for fast bitwise operations 
+    int z = vertex_index & 0x1F;
+    int x = (vertex_index >> 5) & 0x1F;
+    int y = vertex_index >> 10;
 
     vec4 position = vec4(
         x + chunk_world_position.x,
@@ -30,18 +23,11 @@ void main() {
     );
     gl_Position = proj_view * position;
 
-    // Convert vertex_id into UV offset instead of indexing into a vertex_uvs array
+    // (0, 1), (1, 1), (1, 0), (0, 0)
     int vertex_id = gl_VertexID & 3;
-    vec2 vertex_uv_offset = vec2(
-        vertex_id == 1 || vertex_id == 2,
-        vertex_id < 2
+    TexCoord = vec3(
+        vertex_id == 1 || vertex_id == 2, // Boolean expression for u coordinate
+        vertex_id < 2, // Boolean expression for v coordinate
+        vertex_data >> 19 // Bits 19-26 encode texture index (0-255)
     );
-
-    // Convert texture_index into UV coordinates
-    vec2 vertex_uv = vec2(
-        texture_index & 0xF, // % 16
-        texture_index >> 4 // / 16
-    );
-    
-    TexCoord = (vertex_uv + vertex_uv_offset) * (1.0f / 16.0f);
 }
