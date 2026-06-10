@@ -53,7 +53,7 @@ void Renderer::Init() {
     GLuint texture_array_id;
     glGenTextures(1, &texture_array_id);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture_array_id);
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, spliced_data);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_SRGB8_ALPHA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, spliced_data);
 
     // Use maximum anisotropic filtering to improve mipmaps at low angles
     GLfloat max_anisotropy;

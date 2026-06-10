@@ -32,8 +32,12 @@ Application::Application(const std::string& title)
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
+    // Enable sRGB framebuffer to allow for gamma correction
+    glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+
     window_ = std::make_unique<graphics::Window>(mode->width, mode->height, title, primary_monitor);
 
+    // Disable the cursor while retaining mouse movement
     glfwSetInputMode(window_->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
@@ -70,6 +74,9 @@ void Application::Init() {
     glFrontFace(GL_CCW);
 
     glEnable(GL_DEPTH_TEST);
+
+    // Make OpenGL perform gamma correction before writing to the screen
+    glEnable(GL_FRAMEBUFFER_SRGB);
 
     start_time_ = std::chrono::steady_clock::now();
 }
