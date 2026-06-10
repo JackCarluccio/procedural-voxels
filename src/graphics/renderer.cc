@@ -55,6 +55,11 @@ void Renderer::Init() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture_array_id);
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, spliced_data);
 
+    // Use maximum anisotropic filtering to improve mipmaps at low angles
+    GLfloat max_anisotropy;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_anisotropy);
+    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY, max_anisotropy);
+
     // Generate mipmaps to prevent shimmering/sparkling on distant blocks
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Blend pixels when minified
