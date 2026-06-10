@@ -55,8 +55,9 @@ void Renderer::Init() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture_array_id);
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, spliced_data);
 
+    // Generate mipmaps to prevent shimmering/sparkling on distant blocks
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Keep pixels crisp when minified
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Blend pixels when minified
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Keep pixels crisp when magnified
 
     stbi_image_free(image_data);
