@@ -1,5 +1,4 @@
-#ifndef VOXELS_GRAPHICS_MESH_H_
-#define VOXELS_GRAPHICS_MESH_H_
+#pragma once
 
 #include "graphics/element_buffer.h"
 #include "graphics/vertex_buffer.h"
@@ -11,29 +10,25 @@
 
 namespace voxels::graphics {
 
-class Mesh {
-public:
-    explicit Mesh(const void* vertices, size_t vertices_size, const void* indices, size_t indices_size, int index_count);
+    class Mesh {
+    public:
+        explicit Mesh(const void* vertices, size_t vertices_size, const void* indices, size_t indices_size, int index_count);
 
-    Mesh(const Mesh&) = delete;
-    Mesh& operator=(const Mesh&) = delete;
-    Mesh(Mesh&& other) noexcept = default;
-    Mesh& operator=(Mesh&& other) noexcept = default;
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
 
-    void Bind() const noexcept { vertex_array_.Bind(); }
-    void Unbind() const noexcept { vertex_array_.Unbind(); }
+        void Bind() noexcept { vertex_array_.Bind(); }
+        void Unbind() noexcept { vertex_array_.Unbind(); }
 
-    void LinkAttribute(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const;
-    void LinkAttributeI(unsigned int layout, int size, unsigned int type, int stride, const void* offset) const;
+        void LinkAttribute(unsigned int layout, int size, unsigned int type, int stride, const void* offset) noexcept;
+        void LinkAttributeI(unsigned int layout, int size, unsigned int type, int stride, const void* offset) noexcept;
 
-    int GetIndexCount() const noexcept { return element_buffer_.GetCount(); }
+        int GetIndexCount() const noexcept { return element_buffer_.GetCount(); }
 
-private:
-    VertexBuffer vertex_buffer_;
-    VertexArray vertex_array_;
-    ElementBuffer element_buffer_;
-};
+    private:
+        VertexBuffer vertex_buffer_;
+        VertexArray vertex_array_;
+        ElementBuffer element_buffer_;
+    };
 
-} // namespace voxels::graphics
-
-#endif // VOXELS_GRAPHICS_MESH_H_
+}

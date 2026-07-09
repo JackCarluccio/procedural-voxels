@@ -1,19 +1,16 @@
-#ifndef VOXELS_WORLD_BLOCK_H_
-#define VOXELS_WORLD_BLOCK_H_
+#pragma once
 
 #include <cstdint>
 
 namespace voxels::world {
 
-enum class Block : uint8_t {
-    Air = 0,
-    Stone,
-    Dirt,
-    Grass,
-    OakLog,
-    OakLeaves,
-};
+    enum class Block : uint8_t {
+        Air = 0,
+        Stone,
+        Dirt,
+        Grass,
+        OakLog,
+        OakLeaves,
+    };
 
-} // namespace voxels::world
-
-#endif // VOXELS_WORLD_BLOCK_H_
+}

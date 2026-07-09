@@ -12,104 +12,104 @@
 
 namespace voxels::application {
 
-Application::Application(const std::string& title)
-    : is_running_(true)
-{
-    if (glfwInit() == GLFW_FALSE) {
-        throw std::runtime_error("Failed to initialize GLFW");
+    Application::Application(const std::string& title)
+        : is_running_(true)
+    {
+        if (glfwInit() == GLFW_FALSE) {
+            throw std::runtime_error("Failed to initialize GLFW");
+        }
+
+        // Configure GLFW for OpenGL 4.6 Core
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        // Create a fullscreen window
+        GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primary_monitor);
+        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+        // Enable sRGB framebuffer to allow for gamma correction
+        glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+
+        window_ = std::make_unique<graphics::Window>(mode->width, mode->height, title, primary_monitor);
+
+        // Disable the cursor while retaining mouse movement
+        glfwSetInputMode(window_->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+        window_->MakeContextCurrent();
+        glfwSwapInterval(0);
+
+        // Load OpenGL functions using GLAD
+        if (gladLoadGL(glfwGetProcAddress) == 0) {
+            throw std::runtime_error("Failed to initialize OpenGL loader");
+        }
+
+        camera_ = std::make_unique<graphics::Camera>(
+            glm::radians(45.0f),
+            static_cast<float>(mode->width) / static_cast<float>(mode->height),
+            0.1f,
+            5000.0f
+        );
+
+        renderer_ = std::make_unique<graphics::Renderer>();
+        input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), *camera_);
+        chunk_manager_ = std::make_unique<world::ChunkManager>();
     }
 
-    // Configure GLFW for OpenGL 4.6 Core
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(primary_monitor);
-
-    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-
-    // Enable sRGB framebuffer to allow for gamma correction
-    glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
-
-    window_ = std::make_unique<graphics::Window>(mode->width, mode->height, title, primary_monitor);
-
-    // Disable the cursor while retaining mouse movement
-    glfwSetInputMode(window_->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-
-    window_->MakeContextCurrent();
-    glfwSwapInterval(0);
-
-    // Load OpenGL functions using GLAD
-    if (gladLoadGL(glfwGetProcAddress) == 0) {
-        throw std::runtime_error("Failed to initialize OpenGL loader");
+    Application::~Application() {
+        glfwTerminate();
     }
 
-    camera_ = std::make_unique<graphics::Camera>(
-        glm::radians(45.0f),
-        static_cast<float>(mode->width) / static_cast<float>(mode->height),
-        0.1f,
-        5000.0f
-    );
+    void Application::Init() {
+        renderer_->Init();
+        chunk_manager_->Init();
 
-    renderer_ = std::make_unique<graphics::Renderer>();
-    input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), *camera_);
-    chunk_manager_ = std::make_unique<world::ChunkManager>();
-}
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
-Application::~Application() {
-    glfwTerminate();
-}
+        glEnable(GL_DEPTH_TEST);
 
-void Application::Init() {
-    renderer_->Init();
-    chunk_manager_->Init();
+        // Make OpenGL perform gamma correction before writing to the screen
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+        start_time_ = std::chrono::steady_clock::now();
+    }
 
-    glEnable(GL_DEPTH_TEST);
+    void Application::Run() {
+        while (is_running_ && !window_->ShouldClose()) {
+            std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+            float delta_time = static_cast<float>((now - last_frame_time_).count()) * 1e-9f;
+            
+            frame_++;
+            last_frame_time_ = now;
 
-    // Make OpenGL perform gamma correction before writing to the screen
-    glEnable(GL_FRAMEBUFFER_SRGB);
+            Update(delta_time);
+            Draw();
+        }
+    }
 
-    start_time_ = std::chrono::steady_clock::now();
-}
-
-void Application::Run() {
-    while (is_running_ && !window_->ShouldClose()) {
-        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-        float delta_time = static_cast<float>((now - last_frame_time_).count()) * 1e-9f;
+    void Application::Update(float delta_time) {
+        glfwPollEvents();
         
-        frame_++;
-        last_frame_time_ = now;
+        if (window_->HasChangedSize()) {
+            int width = window_->GetWidth();
+            int height = window_->GetHeight();
+            camera_->SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+        }
 
-        Update(delta_time);
-        Draw();
-    }
-}
-
-void Application::Update(float delta_time) {
-    glfwPollEvents();
-    
-    if (window_->HasChangedSize()) {
-        int width = window_->GetWidth();
-        int height = window_->GetHeight();
-        camera_->SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+        input_manager_->Update(delta_time);
+        chunk_manager_->Update(camera_->GetPosition());
     }
 
-    input_manager_->Update(delta_time);
-    chunk_manager_->Update(camera_->GetPosition());
-}
+    void Application::Draw() {
+        renderer_->Draw(camera_.get(), chunk_manager_->GetMap());
+        window_->SwapBuffers();
+    }
 
-void Application::Draw() {
-    renderer_->Draw(camera_.get(), chunk_manager_->GetMap());
-    window_->SwapBuffers();
 }
-
-} // namespace voxels::application

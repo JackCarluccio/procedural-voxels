@@ -12,95 +12,95 @@
 
 namespace voxels::world {
 
-namespace {
+    namespace {
 
-constexpr int BASE_HEIGHT = 4.0f;
-constexpr float CONTINENTALNESS_AMPLITUDE = 240.0f;
-generation::PerlinNoise2d continentalness_noise_sampler(1.0f / 512.0f, 6, 0.5f, 2.0f);
-generation::LinearSpline continentalness_spline({
-    {-1.00f, 0.00f},
-    {-0.15f, 0.40f},
-    {-0.10f, 0.40f},
-    {+0.10f, 0.60f},
-    {+0.15f, 0.60f},
-    {+1.00f, 1.00f},
-});
+        constexpr int BASE_HEIGHT = 4;
+        constexpr float CONTINENTALNESS_AMPLITUDE = 240.0f;
+        generation::PerlinNoise2D continentalness_noise_sampler(1.0f / 512.0f, 6, 0.5f, 2.0f);
+        generation::LinearSpline continentalness_spline({
+            {-1.00f, 0.00f},
+            {-0.15f, 0.40f},
+            {-0.10f, 0.40f},
+            { 0.10f, 0.60f},
+            { 0.15f, 0.60f},
+            { 1.00f, 1.00f},
+        });
 
-} // namespace
-
-void ChunkGenerator::GenerateHeightMap(const Chunk& chunk) noexcept {
-    int chunk_world_x = chunk.GetPosition().x * CHUNK_SIZE;
-    int chunk_world_z = chunk.GetPosition().y * CHUNK_SIZE;
-
-    // noise_map must be cleared before each use since SampleMap adds to the values in the map rather than overwriting them
-    std::memset(noise_map_, 0, sizeof(noise_map_));
-    continentalness_noise_sampler.SampleMap(noise_map_, chunk_world_x, chunk_world_z);
-
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-            float noise = noise_map_[z + x * CHUNK_SIZE];
-            int height = static_cast<int>(
-                continentalness_spline.GetValue(noise) * CONTINENTALNESS_AMPLITUDE
-            ) + BASE_HEIGHT;
-
-            height_map_[z + x * CHUNK_SIZE] = height;
-        }
     }
-}
 
-void ChunkGenerator::FillChunk(Chunk& chunk) noexcept {
-    // The layout of blocks in memory is [y][x][z], so we can memset entire horizontal slices at a time
-    // This allows us to vectorize the filling of all blocks below min_height and all above max_height
-    int min_height = *std::min_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
-    std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * min_height);
+    void ChunkGenerator::GenerateHeightMap(const Chunk& chunk) noexcept {
+        int chunk_world_x = chunk.GetPosition().x * CHUNK_WIDTH;
+        int chunk_world_z = chunk.GetPosition().y * CHUNK_WIDTH;
 
-    int max_height = *std::max_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
-    std::memset(
-        chunk.GetBlocksPointer() + max_height * BLOCKS_PER_CHUNK_SLICE,
-        static_cast<int>(Block::Air),
-        (CHUNK_HEIGHT - max_height) * BLOCKS_PER_CHUNK_SLICE
-    );
+        // noise_map must be cleared before each use since SampleMap adds to the values in the map rather than overwriting them
+        std::memset(noise_map_, 0, sizeof(noise_map_));
+        continentalness_noise_sampler.SampleMap(noise_map_, static_cast<float>(chunk_world_x), static_cast<float>(chunk_world_z));
 
-    // Fill blocks between min_height and max_height according to the height map
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-            int terrainHeight = height_map_[z + x * CHUNK_SIZE];
+        for (int x = 0; x < CHUNK_WIDTH; x++) {
+            for (int z = 0; z < CHUNK_WIDTH; z++) {
+                float noise = noise_map_[z + x * CHUNK_WIDTH];
+                int height = static_cast<int>(
+                    continentalness_spline.GetValue(noise) * CONTINENTALNESS_AMPLITUDE
+                ) + BASE_HEIGHT;
 
-            chunk.SetBlock(x, terrainHeight - 1, z, Block::Grass);
-            chunk.SetBlock(x, terrainHeight - 2, z, Block::Dirt);
-            chunk.SetBlock(x, terrainHeight - 3, z, Block::Dirt);
-            chunk.SetBlock(x, terrainHeight - 4, z, Block::Dirt);
-
-            // Fill in stone from min_height to terrainHeight - 4
-            for (int y = min_height; y < terrainHeight - 4; y++) {
-                chunk.SetBlock(x, y, z, Block::Stone);
-            }
-
-            // Fill in air from terrainHeight to max_height
-            for (int y = terrainHeight; y < max_height; y++) {
-                chunk.SetBlock(x, y, z, Block::Air);
+                height_map_[z + x * CHUNK_WIDTH] = height;
             }
         }
     }
-}
 
-void ChunkGenerator::Shape(Chunk& chunk) noexcept {
-    GenerateHeightMap(chunk);
-    FillChunk(chunk);
-}
+    void ChunkGenerator::FillChunk(Chunk& chunk) noexcept {
+        // The layout of blocks in memory is [y][x][z], so we can memset entire horizontal slices at a time
+        // This allows us to vectorize the filling of all blocks below min_height and all above max_height
+        int min_height = *std::min_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
+        std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * min_height);
 
-void ChunkGenerator::Decorate(Chunk& chunk, ChunkRegion& chunk_region) const noexcept {
-    int surface_level = 0;
-    for (int y = CHUNK_HEIGHT - 1; y >= 0; y--) {
-        if (chunk.GetBlock(0, y, 0) != Block::Air) {
-            surface_level = y;
-            break;
+        int max_height = *std::max_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
+        std::memset(
+            chunk.GetBlocksPointer() + max_height * BLOCKS_PER_CHUNK_SLICE,
+            static_cast<int>(Block::Air),
+            (CHUNK_HEIGHT - max_height) * BLOCKS_PER_CHUNK_SLICE
+        );
+
+        // Fill blocks between min_height and max_height according to the height map
+        for (int x = 0; x < CHUNK_WIDTH; x++) {
+            for (int z = 0; z < CHUNK_WIDTH; z++) {
+                int terrainHeight = height_map_[z + x * CHUNK_WIDTH];
+
+                chunk.SetBlock(x, terrainHeight - 1, z, Block::Grass);
+                chunk.SetBlock(x, terrainHeight - 2, z, Block::Dirt);
+                chunk.SetBlock(x, terrainHeight - 3, z, Block::Dirt);
+                chunk.SetBlock(x, terrainHeight - 4, z, Block::Dirt);
+
+                // Fill in stone from min_height to terrainHeight - 4
+                for (int y = min_height; y < terrainHeight - 4; y++) {
+                    chunk.SetBlock(x, y, z, Block::Stone);
+                }
+
+                // Fill in air from terrainHeight to max_height
+                for (int y = terrainHeight; y < max_height; y++) {
+                    chunk.SetBlock(x, y, z, Block::Air);
+                }
+            }
         }
     }
 
-    if (features::CanBuildOakTree(chunk_region, 0, surface_level + 1, 0)) {
-        features::BuildOakTree(chunk_region, 0, surface_level + 1, 0);
+    void ChunkGenerator::Shape(Chunk& chunk) noexcept {
+        GenerateHeightMap(chunk);
+        FillChunk(chunk);
     }
-}
 
-} // namespace voxels::world
+    void ChunkGenerator::Decorate(Chunk& chunk, ChunkRegion& chunk_region) const noexcept {
+        int surface_level = 0;
+        for (int y = CHUNK_HEIGHT - 1; y >= 0; y--) {
+            if (chunk.GetBlock(0, y, 0) != Block::Air) {
+                surface_level = y;
+                break;
+            }
+        }
+
+        if (features::CanBuildOakTree(chunk_region, 0, surface_level + 1, 0)) {
+            features::BuildOakTree(chunk_region, 0, surface_level + 1, 0);
+        }
+    }
+
+}

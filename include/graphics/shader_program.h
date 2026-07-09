@@ -1,32 +1,29 @@
-#ifndef VOXELS_GRAPHICS_SHADER_PROGRAM_H_
-#define VOXELS_GRAPHICS_SHADER_PROGRAM_H_
+#pragma once
 
 #include <filesystem>
 #include <string>
 
 namespace voxels::graphics {
 
-class ShaderProgram {
-public:
-    explicit ShaderProgram(
-        const std::filesystem::path& vertex_shader_path,
-        const std::filesystem::path& fragment_shader_path
-    );
-    ~ShaderProgram();
+    class ShaderProgram {
+    public:
+        explicit ShaderProgram(
+            const std::filesystem::path& vertex_shader_path,
+            const std::filesystem::path& fragment_shader_path
+        );
+        ~ShaderProgram();
 
-    ShaderProgram(const ShaderProgram&) = delete;
-    ShaderProgram& operator=(const ShaderProgram&) = delete;
-    ShaderProgram(ShaderProgram&& other) noexcept;
-    ShaderProgram& operator=(ShaderProgram&& other) noexcept;
+        ShaderProgram(const ShaderProgram&) = delete;
+        ShaderProgram& operator=(const ShaderProgram&) = delete;
+        ShaderProgram(ShaderProgram&& other) noexcept;
+        ShaderProgram& operator=(ShaderProgram&& other) noexcept;
 
-    void Use() const noexcept;
-    void SetUniform2i(const std::string& name, int v0, int v1) const noexcept;
-    void SetUniformMatrix4x4(const std::string& name, const float* value) const noexcept;
+        void Use() noexcept;
+        void SetUniform2i(const std::string& name, int v0, int v1) noexcept;
+        void SetUniformMatrix4x4(const std::string& name, const float* value) noexcept;
 
-private:
-    unsigned int id_;
-};
+    private:
+        unsigned int id_;
+    };
 
-} // namespace voxels::graphics
-
-#endif // VOXELS_GRAPHICS_SHADER_PROGRAM_H_
+}

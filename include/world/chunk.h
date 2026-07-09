@@ -1,5 +1,4 @@
-#ifndef VOXELS_WORLD_CHUNK_H_
-#define VOXELS_WORLD_CHUNK_H_
+#pragma once
 
 #include "graphics/mesh.h"
 #include "world/block.h"
@@ -15,73 +14,53 @@
 
 namespace voxels::world {
 
-class Chunk {
-public:
-    Chunk() = delete;
-    // Intentionally do not initialize blocks_ since the ChunkGenerator will fill it
-    explicit Chunk(const glm::ivec2& position)
-        { stage_ = ChunkStage::Empty; position_ = position; };
+    class Chunk {
+    public:
+        Chunk() = delete;
+        // Intentionally do not initialize blocks_ since the ChunkGenerator will fill it
+        explicit Chunk(const glm::ivec2& position)
+            { stage_ = ChunkStage::Empty; position_ = position; };
 
-    Chunk(const Chunk&) = delete;
-    Chunk& operator=(const Chunk&) = delete;
-    Chunk(Chunk&&) = delete;
-    Chunk& operator=(Chunk&&) = delete;
+        Chunk(const Chunk&) = delete;
+        Chunk& operator=(const Chunk&) = delete;
+        Chunk(Chunk&&) = delete;
+        Chunk& operator=(Chunk&&) = delete;
 
-    ChunkStage GetStage() const noexcept {
-        return stage_;
-    }
+        ChunkStage GetStage() const noexcept { return stage_; }
+        void SetStage(ChunkStage stage) noexcept { stage_ = stage; }
 
-    void SetStage(ChunkStage stage) noexcept {
-        stage_ = stage;
-    }
+        Block GetBlock(int index) const noexcept { return blocks_[index]; }
+        
+        Block GetBlock(int x, int y, int z) const noexcept {
+            return GetBlock(ToIndex(x, y, z));
+        }
 
-    Block GetBlock(int index) const noexcept {
-        return blocks_[index];
-    }
+        Block GetBlock(const glm::ivec3& position) const noexcept {
+            return GetBlock(ToIndex(position));
+        }
 
-    Block GetBlock(int x, int y, int z) const noexcept {
-        return GetBlock(ToIndex(x, y, z));
-    }
+        void SetBlock(int index, Block block) noexcept { blocks_[index] = block; }
 
-    Block GetBlock(const glm::ivec3& position) const noexcept {
-        return GetBlock(ToIndex(position));
-    }
+        void SetBlock(int x, int y, int z, Block block) noexcept {
+            SetBlock(ToIndex(x, y, z), block);
+        }
 
-    void SetBlock(int index, Block block) noexcept {
-        blocks_[index] = block;
-    }
+        void SetBlock(const glm::ivec3& position, Block block) noexcept {
+            SetBlock(ToIndex(position), block);
+        }
 
-    void SetBlock(int x, int y, int z, Block block) noexcept {
-        SetBlock(ToIndex(x, y, z), block);
-    }
+        Block* GetBlocksPointer() noexcept { return blocks_.data(); }
 
-    void SetBlock(const glm::ivec3& position, Block block) noexcept {
-        SetBlock(ToIndex(position), block);
-    }
+        glm::ivec2 GetPosition() const noexcept { return position_; }
 
-    Block* GetBlocksPointer() noexcept {
-        return blocks_.data();
-    }
+        const std::unique_ptr<graphics::Mesh>& GetMesh() const noexcept { return mesh_; }
+        void SetMesh(std::unique_ptr<graphics::Mesh> mesh) noexcept { mesh_ = std::move(mesh); }
 
-    glm::ivec2 GetPosition() const noexcept {
-        return position_;
-    }
+    private:
+        ChunkStage stage_;
+        glm::ivec2 position_;
+        std::unique_ptr<graphics::Mesh> mesh_;
+        std::array<Block, BLOCKS_PER_CHUNK> blocks_;
+    };
 
-    const std::unique_ptr<graphics::Mesh>& GetMesh() const noexcept {
-        return mesh_;
-    }
-
-    void SetMesh(std::unique_ptr<graphics::Mesh> mesh) noexcept {
-        mesh_ = std::move(mesh);
-    }
-
-private:
-    ChunkStage stage_;
-    glm::ivec2 position_;
-    std::unique_ptr<graphics::Mesh> mesh_;
-    std::array<Block, BLOCKS_PER_CHUNK> blocks_;
-};
-
-} // namespace voxels::world
-
-#endif // VOXELS_WORLD_CHUNK_H_
+}

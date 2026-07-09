@@ -7,108 +7,108 @@
 
 namespace {
 
-std::string ReadFile(const std::filesystem::path& path) {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    if (!file) {
-        throw std::runtime_error("Failed to open file: " + path.string());
+    std::string ReadFile(const std::filesystem::path& path) {
+        std::ifstream file(path, std::ios::binary | std::ios::ate);
+        if (!file) {
+            throw std::runtime_error("Failed to open file: " + path.string());
+        }
+
+        std::streamsize size = file.tellg();
+        if (size < 0) {
+            throw std::runtime_error("Failed to determine file size: " + path.string());
+        }
+
+        file.seekg(0, std::ios::beg);
+
+        std::string buffer(static_cast<size_t>(size), '\0');
+        if (!file.read(buffer.data(), size)) {
+            throw std::runtime_error("Failed to read file: " + path.string());
+        }
+
+        return buffer;
     }
 
-    std::streamsize size = file.tellg();
-    if (size < 0) {
-        throw std::runtime_error("Failed to determine file size: " + path.string());
+    unsigned int CompileShader(GLenum shader_type, const std::filesystem::path& shader_path) {
+        std::string shader_source = ReadFile(shader_path);
+        const char* shader_source_cstr = shader_source.c_str();
+
+        // Create and compile shader
+        unsigned int id = glCreateShader(shader_type);
+        glShaderSource(id, 1, &shader_source_cstr, nullptr);
+        glCompileShader(id);
+
+        // Log compilation errors instead of silently failing
+        int success;
+        char info_log[512];
+        glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(id, 512, nullptr, info_log);
+            throw std::runtime_error("Shader compilation failed (" + shader_path.string() + "): " + info_log);
+        }
+
+        return id;
     }
 
-    file.seekg(0, std::ios::beg);
-
-    std::string buffer(static_cast<size_t>(size), '\0');
-    if (!file.read(buffer.data(), size)) {
-        throw std::runtime_error("Failed to read file: " + path.string());
-    }
-
-    return buffer;
 }
-
-unsigned int CompileShader(GLenum shader_type, const std::filesystem::path& shader_path) {
-    std::string shader_source = ReadFile(shader_path);
-    const char* shader_source_cstr = shader_source.c_str();
-
-    // Create and compile shader
-    unsigned int id = glCreateShader(shader_type);
-    glShaderSource(id, 1, &shader_source_cstr, nullptr);
-    glCompileShader(id);
-
-    // Syntax issues could cause compilation to fail
-    int success;
-    char info_log[512];
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(id, 512, nullptr, info_log);
-        throw std::runtime_error("Shader compilation failed (" + shader_path.string() + "): " + info_log);
-    }
-
-    return id;
-}
-
-} // anonymous namespace
 
 namespace voxels::graphics {
 
-ShaderProgram::ShaderProgram(
-    const std::filesystem::path& vertex_shader_path,
-    const std::filesystem::path& fragment_shader_path)
-    : id_(glCreateProgram())
-{
-    unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_path);
-    unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader_path);
+    ShaderProgram::ShaderProgram(
+        const std::filesystem::path& vertex_shader_path,
+        const std::filesystem::path& fragment_shader_path)
+        : id_(glCreateProgram())
+    {
+        unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_path);
+        unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader_path);
 
-    glAttachShader(id_, vertex_shader_id);
-    glAttachShader(id_, fragment_shader_id);
-    glLinkProgram(id_);
+        glAttachShader(id_, vertex_shader_id);
+        glAttachShader(id_, fragment_shader_id);
+        glLinkProgram(id_);
 
-    // Delete shaders as they're linked and no longer necessary
-    glDeleteShader(vertex_shader_id);
-    glDeleteShader(fragment_shader_id);
+        // Delete shaders as they're linked and no longer necessary
+        glDeleteShader(vertex_shader_id);
+        glDeleteShader(fragment_shader_id);
 
-    // Linking could fail if shaders are incompatible (different i/o)
-    int success;
-    char info_log[512];
-    glGetProgramiv(id_, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(id_, 512, nullptr, info_log);
-        throw std::runtime_error("Shader program linking failed: " + std::string(info_log));
+        // Log linking errors instead of silently failing
+        int success;
+        char info_log[512];
+        glGetProgramiv(id_, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(id_, 512, nullptr, info_log);
+            throw std::runtime_error("Shader program linking failed: " + std::string(info_log));
+        }
     }
+
+    ShaderProgram::~ShaderProgram() {
+        glDeleteProgram(id_);
+    }
+
+    ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept : id_(other.id_) {
+        other.id_ = 0;
+    }
+
+    ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
+        if (this == &other) return *this;
+
+        glDeleteProgram(id_);
+        id_ = other.id_;
+        other.id_ = 0;
+
+        return *this;
+    }
+
+    void ShaderProgram::Use() noexcept {
+        glUseProgram(id_);
+    }
+
+    void ShaderProgram::SetUniform2i(const std::string& name, int v0, int v1) noexcept {
+        int location = glGetUniformLocation(id_, name.c_str());
+        glUniform2i(location, v0, v1);
+    }
+
+    void ShaderProgram::SetUniformMatrix4x4(const std::string& name, const float* value) noexcept {
+        int location = glGetUniformLocation(id_, name.c_str());
+        glUniformMatrix4fv(location, 1, GL_FALSE, value);
+    }
+
 }
-
-ShaderProgram::~ShaderProgram() {
-    glDeleteProgram(id_);
-}
-
-ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept : id_(other.id_) {
-    other.id_ = 0;
-}
-
-ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
-    if (this == &other) return *this;
-
-    glDeleteProgram(id_);
-    id_ = other.id_;
-    other.id_ = 0;
-
-    return *this;
-}
-
-void ShaderProgram::Use() const noexcept {
-    glUseProgram(id_);
-}
-
-void ShaderProgram::SetUniform2i(const std::string& name, int v0, int v1) const noexcept {
-    int location = glGetUniformLocation(id_, name.c_str());
-    glUniform2i(location, v0, v1);
-}
-
-void ShaderProgram::SetUniformMatrix4x4(const std::string& name, const float* value) const noexcept {
-    int location = glGetUniformLocation(id_, name.c_str());
-    glUniformMatrix4fv(location, 1, GL_FALSE, value);
-}
-
-} // namespace voxels::graphics

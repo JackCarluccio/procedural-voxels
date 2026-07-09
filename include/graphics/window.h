@@ -1,5 +1,4 @@
-#ifndef VOXELS_GRAPHICS_WINDOW_H_
-#define VOXELS_GRAPHICS_WINDOW_H_
+#pragma once
 
 #include <string>
 
@@ -8,42 +7,38 @@ struct GLFWmonitor;
 
 namespace voxels::graphics {
 
-class Window {
-public:
-	explicit Window(int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
-	~Window();
+	class Window {
+	public:
+		explicit Window(int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
+		~Window();
 
-	// Windows own unique resources and therefore should not be copied
-	Window(const Window&) = delete;
-	Window& operator=(const Window&) = delete;
-	Window(Window&& other) noexcept;
-	Window& operator=(Window&& other) noexcept;
+		Window(const Window&) = delete;
+		Window& operator=(const Window&) = delete;
+		Window(Window&& other) noexcept;
+		Window& operator=(Window&& other) noexcept;
 
-	void MakeContextCurrent() const noexcept;
-	bool ShouldClose() const noexcept;
-	void SwapBuffers() const noexcept;
+		void MakeContextCurrent() noexcept;
+		bool ShouldClose() const noexcept;
+		void SwapBuffers() noexcept;
 
-	bool HasChangedSize() noexcept;
+		bool HasChangedSize() noexcept;
 
-	int GetWidth() const noexcept { return width_; }
-	int GetHeight() const noexcept { return height_; }
-	const std::string& GetTitle() const noexcept { return title_; }
+		int GetWidth() const noexcept { return width_; }
+		int GetHeight() const noexcept { return height_; }
+		const std::string& GetTitle() const noexcept { return title_; }
+		GLFWwindow* GetGLFWwindow() const noexcept { return window_; }
 
-	GLFWwindow* GetGLFWwindow() const noexcept { return window_; }
+	private:
+		// Callback for GLFW window resizing events
+		static void framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept;
 
-private:
-	// Callback for GLFW
-	static void framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept;
+		void OnResize(int width, int height) noexcept;
 
-	void OnResize(int width, int height) noexcept;
+		int width_;
+		int height_;
+		std::string title_;
+		GLFWwindow* window_; // Must be initialized after title_
+		bool hasChangedSize_;
+	};
 
-	int width_;
-	int height_;
-	std::string title_;
-	GLFWwindow* window_; // Must be initialized after title_
-	bool hasChangedSize_;
-};
-
-} // namespace voxels::graphics
-
-#endif // VOXELS_GRAPHICS_WINDOW_H_
+}
