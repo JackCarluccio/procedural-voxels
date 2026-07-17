@@ -20,6 +20,10 @@ namespace voxels::world {
         { 2, 3, 1 }, // Grass
         { 4, 5, 5 }, // Oak Log
         { 6, 6, 6 }, // Oak Leaves
+        { 7, 7, 7 }, // Sand
+        { 8, 9, 9 }, // SandStone
+        { 10, 11, 1 } // Snow
+
     };
 
     constexpr uint8_t GetTextureIndex(const BlockData& data, Face face) noexcept {

@@ -1,5 +1,7 @@
 #include "world/chunk_generator.h"
 
+#include "world/biomes/biome.h"
+#include "world/biomes/biome_data.h"
 #include "world/block.h"
 #include "world/features/oak_tree.h"
 #include "world/generation/linear_spline.h"
@@ -8,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 
 namespace voxels::world {
@@ -26,67 +29,96 @@ namespace voxels::world {
             { 1.00f, 1.00f},
         });
 
-    }
+        generation::PerlinNoise2D temperature_noise(1.0f / 512.0f, 4, 0.5f, 2.0f);
+        generation::PerlinNoise2D humidity_noise(1.0f / 256.0f, 3, 0.5f, 2.0f);
 
-    void ChunkGenerator::GenerateHeightMap(const Chunk& chunk) noexcept {
-        int chunk_world_x = chunk.GetPosition().x * CHUNK_WIDTH;
-        int chunk_world_z = chunk.GetPosition().y * CHUNK_WIDTH;
+        // Generates a height map. A height of 0 corresponds to one block of terrain
+        void GenerateHeightMap(const Chunk& chunk, uint8_t* height_map) noexcept {
+            float chunk_world_x = static_cast<float>(chunk.GetPosition().x * CHUNK_WIDTH);
+            float chunk_world_z = static_cast<float>(chunk.GetPosition().y * CHUNK_WIDTH);
+            alignas(64) float noise_map[BLOCKS_PER_CHUNK_SLICE] {};
+    
+            continentalness_noise_sampler.SampleMap(noise_map, chunk_world_x, chunk_world_z);
 
-        // noise_map must be cleared before each use since SampleMap adds to the values in the map rather than overwriting them
-        std::memset(noise_map_, 0, sizeof(noise_map_));
-        continentalness_noise_sampler.SampleMap(noise_map_, static_cast<float>(chunk_world_x), static_cast<float>(chunk_world_z));
-
-        for (int x = 0; x < CHUNK_WIDTH; x++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                float noise = noise_map_[z + x * CHUNK_WIDTH];
+            for (int i = 0; i < BLOCKS_PER_CHUNK_SLICE; i++) {
+                float noise = noise_map[i];
                 int height = static_cast<int>(
                     continentalness_spline.GetValue(noise) * CONTINENTALNESS_AMPLITUDE
                 ) + BASE_HEIGHT;
 
-                height_map_[z + x * CHUNK_WIDTH] = height;
+                height_map[i] = height;
             }
         }
-    }
 
-    void ChunkGenerator::FillChunk(Chunk& chunk) noexcept {
-        // The layout of blocks in memory is [y][x][z], so we can memset entire horizontal slices at a time
-        // This allows us to vectorize the filling of all blocks below min_height and all above max_height
-        int min_height = *std::min_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
-        std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * min_height);
+        void GenerateBiomeMap(const Chunk& chunk, biome::Biome* biome_map) noexcept {
+            float chunk_world_x = static_cast<float>(chunk.GetPosition().x * CHUNK_WIDTH);
+            float chunk_world_z = static_cast<float>(chunk.GetPosition().y * CHUNK_WIDTH);
+            
+            for (int x = 0; x < CHUNK_WIDTH; x++) {
+                for (int z = 0; z < CHUNK_WIDTH; z++) {
+                    float world_x = chunk_world_x + static_cast<float>(x);
+                    float world_z = chunk_world_z + static_cast<float>(z);
 
-        int max_height = *std::max_element(height_map_, height_map_ + BLOCKS_PER_CHUNK_SLICE);
-        std::memset(
-            chunk.GetBlocksPointer() + max_height * BLOCKS_PER_CHUNK_SLICE,
-            static_cast<int>(Block::Air),
-            (CHUNK_HEIGHT - max_height) * BLOCKS_PER_CHUNK_SLICE
-        );
+                    float temperature = temperature_noise.Sample(world_x, world_z);
+                    float humidity = humidity_noise.Sample(world_x, world_z);
+                    biome::BiomeParameters biome_params {
+                        .temperature = biome::GetTemperatureEnum(temperature),
+                        .humidity = biome::GetHumidityEnum(humidity),
+                    };
 
-        // Fill blocks between min_height and max_height according to the height map
-        for (int x = 0; x < CHUNK_WIDTH; x++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                int terrainHeight = height_map_[z + x * CHUNK_WIDTH];
-
-                chunk.SetBlock(x, terrainHeight - 1, z, Block::Grass);
-                chunk.SetBlock(x, terrainHeight - 2, z, Block::Dirt);
-                chunk.SetBlock(x, terrainHeight - 3, z, Block::Dirt);
-                chunk.SetBlock(x, terrainHeight - 4, z, Block::Dirt);
-
-                // Fill in stone from min_height to terrainHeight - 4
-                for (int y = min_height; y < terrainHeight - 4; y++) {
-                    chunk.SetBlock(x, y, z, Block::Stone);
-                }
-
-                // Fill in air from terrainHeight to max_height
-                for (int y = terrainHeight; y < max_height; y++) {
-                    chunk.SetBlock(x, y, z, Block::Air);
+                    biome_map[z + x * CHUNK_WIDTH] = biome::DetermineBiome(biome_params);
                 }
             }
         }
+    
+        void FillChunk(Chunk& chunk, const uint8_t* height_map, const biome::Biome* biome_map) noexcept {
+            // Since block layout follows [y][x][z], we can fill all blocks up to the minimum terrain height with stone.
+            int min_height = *std::min_element(height_map, height_map + BLOCKS_PER_CHUNK_SLICE);
+            std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * (min_height + 1 - 4));
+    
+            /*
+                Fill all blocks above the minimum terrain height with air.
+                Some blocks will be overwritten with terrain blocks in the next step,
+                but this vectorized memset is much faster than a cache-unfriendly loop for each column
+            */
+            std::memset(
+                chunk.GetBlocksPointer() + (min_height + 1) * BLOCKS_PER_CHUNK_SLICE,
+                static_cast<int>(Block::Air),
+                (CHUNK_HEIGHT - (min_height + 1)) * BLOCKS_PER_CHUNK_SLICE
+            );
+
+            // Decorate or somethign
+            for (int x = 0; x < CHUNK_WIDTH; x++) {
+                for (int z = 0; z < CHUNK_WIDTH; z++) {
+                    int terrainHeight = height_map[z + x * CHUNK_WIDTH];
+                    biome::Biome biome = biome_map[z + x * CHUNK_WIDTH];
+
+                    Block surface_block = biome::GetSurfaceBlock(biome);
+                    Block subsurface_block = biome::GetSubsurfaceBlock(biome);
+
+                    chunk.SetBlock(x, terrainHeight - 0, z, surface_block);
+                    chunk.SetBlock(x, terrainHeight - 1, z, subsurface_block);
+                    chunk.SetBlock(x, terrainHeight - 2, z, subsurface_block);
+                    chunk.SetBlock(x, terrainHeight - 3, z, subsurface_block);
+    
+                    // Fill in stone missing from the minimum terrain height to the current terrain height
+                    for (int y = min_height - 3; y < terrainHeight - 3; y++) {
+                        chunk.SetBlock(x, y, z, Block::Stone);
+                    }
+                }
+            }
+        }
+
     }
 
     void ChunkGenerator::Shape(Chunk& chunk) noexcept {
-        GenerateHeightMap(chunk);
-        FillChunk(chunk);
+        alignas(64) uint8_t height_map[BLOCKS_PER_CHUNK_SLICE];
+        alignas(64) biome::Biome biome_map[BLOCKS_PER_CHUNK_SLICE];
+
+        GenerateHeightMap(chunk, height_map);
+        GenerateBiomeMap(chunk, biome_map);
+
+        FillChunk(chunk, height_map, biome_map);
     }
 
     void ChunkGenerator::Decorate(Chunk& chunk, ChunkRegion& chunk_region) const noexcept {
