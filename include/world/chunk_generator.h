@@ -14,6 +14,8 @@ namespace voxels::world {
         ChunkGenerator(ChunkGenerator&&) = delete;
         ChunkGenerator& operator=(ChunkGenerator&&) = delete;
 
+        void Init();
+
         void Shape(Chunk& chunk) noexcept;
         void Decorate(Chunk& chunk, ChunkRegion& chunk_region) const noexcept;
     };

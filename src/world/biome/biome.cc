@@ -1,4 +1,4 @@
-#include "world/biomes/biome.h"
+#include "world/biome/biome.h"
 
 namespace voxels::world::biome {
 

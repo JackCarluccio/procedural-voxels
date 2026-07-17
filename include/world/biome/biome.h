@@ -1,7 +1,7 @@
 #pragma once
 
-#include "world/biomes/temperature.h"
-#include "world/biomes/humidity.h"
+#include "world/biome/temperature.h"
+#include "world/biome/humidity.h"
 #include "world/block.h"
 
 namespace voxels::world::biome {

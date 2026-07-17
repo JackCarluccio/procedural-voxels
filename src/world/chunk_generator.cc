@@ -1,9 +1,9 @@
 #include "world/chunk_generator.h"
 
-#include "world/biomes/biome.h"
-#include "world/biomes/biome_data.h"
+#include "util/ivec2_hash.h"
+#include "world/biome/biome.h"
+#include "world/biome/biome_data.h"
 #include "world/block.h"
-#include "world/features/oak_tree.h"
 #include "world/generation/linear_spline.h"
 #include "world/generation/perlin_noise_2d.h"
 #include "world/helper.h"
@@ -12,6 +12,8 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <random>
+#include <vector>
 
 namespace voxels::world {
 
@@ -50,60 +52,99 @@ namespace voxels::world {
             }
         }
 
+        biome::Biome GetBiomeAt(const Chunk& chunk, int x, int z) noexcept {
+            float world_x = static_cast<float>(chunk.GetPosition().x * CHUNK_WIDTH + x);
+            float world_z = static_cast<float>(chunk.GetPosition().y * CHUNK_WIDTH + z);
+
+            float temperature = temperature_noise.Sample(world_x, world_z);
+            float humidity = humidity_noise.Sample(world_x, world_z);
+            biome::BiomeParameters biome_params {
+                .temperature = biome::GetTemperatureEnum(temperature),
+                .humidity = biome::GetHumidityEnum(humidity),
+            };
+
+            return biome::DetermineBiome(biome_params);
+        }
+
         void GenerateBiomeMap(const Chunk& chunk, biome::Biome* biome_map) noexcept {
-            float chunk_world_x = static_cast<float>(chunk.GetPosition().x * CHUNK_WIDTH);
-            float chunk_world_z = static_cast<float>(chunk.GetPosition().y * CHUNK_WIDTH);
-            
             for (int x = 0; x < CHUNK_WIDTH; x++) {
                 for (int z = 0; z < CHUNK_WIDTH; z++) {
-                    float world_x = chunk_world_x + static_cast<float>(x);
-                    float world_z = chunk_world_z + static_cast<float>(z);
-
-                    float temperature = temperature_noise.Sample(world_x, world_z);
-                    float humidity = humidity_noise.Sample(world_x, world_z);
-                    biome::BiomeParameters biome_params {
-                        .temperature = biome::GetTemperatureEnum(temperature),
-                        .humidity = biome::GetHumidityEnum(humidity),
-                    };
-
-                    biome_map[z + x * CHUNK_WIDTH] = biome::DetermineBiome(biome_params);
+                    biome_map[z + x * CHUNK_WIDTH] = GetBiomeAt(chunk, x, z);
                 }
             }
         }
     
-        void FillChunk(Chunk& chunk, const uint8_t* height_map, const biome::Biome* biome_map) noexcept {
+        void FillChunk(Chunk& chunk, const uint8_t* height_map) noexcept {
             // Since block layout follows [y][x][z], we can fill all blocks up to the minimum terrain height with stone.
             int min_height = *std::min_element(height_map, height_map + BLOCKS_PER_CHUNK_SLICE);
-            std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * (min_height + 1 - 4));
+            std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), BLOCKS_PER_CHUNK_SLICE * (min_height + 1));
     
-            /*
-                Fill all blocks above the minimum terrain height with air.
-                Some blocks will be overwritten with terrain blocks in the next step,
-                but this vectorized memset is much faster than a cache-unfriendly loop for each column
-            */
+            // Fill all blocks above the minimum terrain height with air.
             std::memset(
                 chunk.GetBlocksPointer() + (min_height + 1) * BLOCKS_PER_CHUNK_SLICE,
                 static_cast<int>(Block::Air),
                 (CHUNK_HEIGHT - (min_height + 1)) * BLOCKS_PER_CHUNK_SLICE
             );
 
-            // Decorate or somethign
             for (int x = 0; x < CHUNK_WIDTH; x++) {
                 for (int z = 0; z < CHUNK_WIDTH; z++) {
                     int terrainHeight = height_map[z + x * CHUNK_WIDTH];
-                    biome::Biome biome = biome_map[z + x * CHUNK_WIDTH];
-
-                    Block surface_block = biome::GetSurfaceBlock(biome);
-                    Block subsurface_block = biome::GetSubsurfaceBlock(biome);
-
-                    chunk.SetBlock(x, terrainHeight - 0, z, surface_block);
-                    chunk.SetBlock(x, terrainHeight - 1, z, subsurface_block);
-                    chunk.SetBlock(x, terrainHeight - 2, z, subsurface_block);
-                    chunk.SetBlock(x, terrainHeight - 3, z, subsurface_block);
-    
-                    // Fill in stone missing from the minimum terrain height to the current terrain height
-                    for (int y = min_height - 3; y < terrainHeight - 3; y++) {
+                    for (int y = min_height + 1; y <= terrainHeight; y++) {
                         chunk.SetBlock(x, y, z, Block::Stone);
+                    }
+                }
+            }
+        }
+
+        void DecorateSurfaceBlocks(Chunk& chunk, const uint8_t* height_map, const biome::Biome* biome_map) noexcept {
+            for (int x = 0; x < CHUNK_WIDTH; x++) {
+                for (int z = 0; z < CHUNK_WIDTH; z++) {
+                    int surface_level = height_map[z + x * CHUNK_WIDTH];
+                    Block surface_block = biome::GetSurfaceBlock(biome_map[z + x * CHUNK_WIDTH]);
+                    Block subsurface_block = biome::GetSubsurfaceBlock(biome_map[z + x * CHUNK_WIDTH]);
+                    chunk.SetBlock(x, surface_level - 0, z, surface_block);
+                    chunk.SetBlock(x, surface_level - 1, z, subsurface_block);
+                    chunk.SetBlock(x, surface_level - 2, z, subsurface_block);
+                    chunk.SetBlock(x, surface_level - 3, z, subsurface_block);
+                }
+            }
+        }
+
+        std::vector<biome::Biome> GetUniqueBiomes(const biome::Biome* biome_map) noexcept {
+            std::vector<biome::Biome> unique_biomes;
+            for (int i = 0; i < BLOCKS_PER_CHUNK_SLICE; i++) {
+                biome::Biome biome = biome_map[i];
+                if (std::find(unique_biomes.begin(), unique_biomes.end(), biome) == unique_biomes.end()) {
+                    unique_biomes.push_back(biome);
+                }
+            }
+
+            return unique_biomes;
+        }
+
+        void DecorateFeatures(
+            ChunkRegion& chunk_region,
+            const uint8_t* height_map,
+            const biome::Biome* biome_map,
+            const std::vector<biome::Biome>& biomes,
+            std::mt19937& rng
+        ) noexcept {
+            for (auto biome : biomes) {
+                const auto& feature_commands = biome::biome_data[static_cast<int>(biome)].feature_commands;
+                for (const auto& command : feature_commands) {
+                    for (int i = 0; i < command.attempts; i++) {
+                        int x = rng() % CHUNK_WIDTH;
+                        int z = rng() % CHUNK_WIDTH;
+
+                        biome::Biome attempt_biome = biome_map[z + x * CHUNK_WIDTH];
+                        if (attempt_biome != biome) {
+                            continue;
+                        }
+
+                        int y = height_map[z + x * CHUNK_WIDTH] + 1;
+                        if (command.feature->CanGenerate(chunk_region, x, y, z)) {
+                            command.feature->Generate(chunk_region, x, y, z);
+                        }
                     }
                 }
             }
@@ -111,28 +152,30 @@ namespace voxels::world {
 
     }
 
+    void ChunkGenerator::Init() {
+        biome::InitBiomeData();
+    }
+
     void ChunkGenerator::Shape(Chunk& chunk) noexcept {
         alignas(64) uint8_t height_map[BLOCKS_PER_CHUNK_SLICE];
-        alignas(64) biome::Biome biome_map[BLOCKS_PER_CHUNK_SLICE];
-
         GenerateHeightMap(chunk, height_map);
-        GenerateBiomeMap(chunk, biome_map);
-
-        FillChunk(chunk, height_map, biome_map);
+        FillChunk(chunk, height_map);
     }
 
     void ChunkGenerator::Decorate(Chunk& chunk, ChunkRegion& chunk_region) const noexcept {
-        int surface_level = 0;
-        for (int y = CHUNK_HEIGHT - 1; y >= 0; y--) {
-            if (chunk.GetBlock(0, y, 0) != Block::Air) {
-                surface_level = y;
-                break;
-            }
-        }
+        std::mt19937 rng;
+        rng.seed(util::IVec2Hash{}(chunk.GetPosition()));
 
-        if (features::CanBuildOakTree(chunk_region, 0, surface_level + 1, 0)) {
-            features::BuildOakTree(chunk_region, 0, surface_level + 1, 0);
-        }
+        alignas(64) uint8_t height_map[BLOCKS_PER_CHUNK_SLICE];
+        GenerateHeightMap(chunk, height_map);
+        
+        alignas(64) biome::Biome biome_map[BLOCKS_PER_CHUNK_SLICE];
+        GenerateBiomeMap(chunk, biome_map);
+
+        DecorateSurfaceBlocks(chunk, height_map, biome_map);
+
+        const auto unique_biomes = GetUniqueBiomes(biome_map);
+        DecorateFeatures(chunk_region, height_map, biome_map, unique_biomes, rng);
     }
 
 }
