@@ -34,6 +34,7 @@ namespace voxels::world {
         void MeshExteriorFaces(const Chunk& chunk, const Chunk* neighbor, Face face) noexcept;
 
         void AddFace(int index, Face face, Block block) noexcept;
+        void Debug_AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept;
 
     };
     

@@ -21,12 +21,70 @@ namespace {
     }
 
     constexpr uint32_t face_vertex_offsets[6][4] = {
-        {VertexIndex(1, 0, 0), VertexIndex(0, 0, 0), VertexIndex(0, 1, 0), VertexIndex(1, 1, 0)}, // -Z
-        {VertexIndex(0, 0, 1), VertexIndex(1, 0, 1), VertexIndex(1, 1, 1), VertexIndex(0, 1, 1)}, // +Z
-        {VertexIndex(0, 0, 0), VertexIndex(0, 0, 1), VertexIndex(0, 1, 1), VertexIndex(0, 1, 0)}, // -X
-        {VertexIndex(1, 0, 1), VertexIndex(1, 0, 0), VertexIndex(1, 1, 0), VertexIndex(1, 1, 1)}, // +X
-        {VertexIndex(1, 0, 0), VertexIndex(1, 0, 1), VertexIndex(0, 0, 1), VertexIndex(0, 0, 0)}, // -Y
-        {VertexIndex(0, 1, 0), VertexIndex(0, 1, 1), VertexIndex(1, 1, 1), VertexIndex(1, 1, 0)}, // +Y
+        { VertexIndex(1, 0, 0), VertexIndex(0, 0, 0), VertexIndex(0, 1, 0), VertexIndex(1, 1, 0) }, // -Z
+        { VertexIndex(0, 0, 1), VertexIndex(1, 0, 1), VertexIndex(1, 1, 1), VertexIndex(0, 1, 1) }, // +Z
+        { VertexIndex(0, 0, 0), VertexIndex(0, 0, 1), VertexIndex(0, 1, 1), VertexIndex(0, 1, 0) }, // -X
+        { VertexIndex(1, 0, 1), VertexIndex(1, 0, 0), VertexIndex(1, 1, 0), VertexIndex(1, 1, 1) }, // +X
+        { VertexIndex(1, 0, 1), VertexIndex(0, 0, 1), VertexIndex(0, 0, 0), VertexIndex(1, 0, 0) }, // -Y
+        { VertexIndex(1, 1, 0), VertexIndex(0, 1, 0), VertexIndex(0, 1, 1), VertexIndex(1, 1, 1) }, // +Y
+    };
+
+    constexpr int ambient_occlusion_index_offsets[6][4][3] = {
+        // Face::NegZ
+        {
+            { ToIndex( 1,  0, -1), ToIndex( 1, -1, -1), ToIndex( 0, -1, -1) },
+            { ToIndex( 0, -1, -1), ToIndex(-1, -1, -1), ToIndex(-1,  0, -1) },
+            { ToIndex(-1,  0, -1), ToIndex(-1,  1, -1), ToIndex( 0,  1, -1) },
+            { ToIndex( 0,  1, -1), ToIndex( 1,  1, -1), ToIndex( 1,  0, -1) },
+        },
+        // Face::PosZ
+        {
+            { ToIndex(-1,  0,  1), ToIndex(-1, -1,  1), ToIndex( 0, -1,  1) },
+            { ToIndex( 0, -1,  1), ToIndex( 1, -1,  1), ToIndex( 1,  0,  1) },
+            { ToIndex( 1,  0,  1), ToIndex( 1,  1,  1), ToIndex( 0,  1,  1) },
+            { ToIndex( 0,  1,  1), ToIndex(-1,  1,  1), ToIndex(-1,  0,  1) },
+        },
+        // Face::NegX
+        {
+            { ToIndex(-1,  0, -1), ToIndex(-1, -1, -1), ToIndex(-1, -1,  0) },
+            { ToIndex(-1, -1,  0), ToIndex(-1, -1,  1), ToIndex(-1,  0,  1) },
+            { ToIndex(-1,  0,  1), ToIndex(-1,  1,  1), ToIndex(-1,  1,  0) },
+            { ToIndex(-1,  1,  0), ToIndex(-1,  1, -1), ToIndex(-1,  0, -1) },
+        },
+        // Face::PosX
+        {
+            { ToIndex( 1,  0,  1), ToIndex( 1, -1,  1), ToIndex( 1, -1,  0) },
+            { ToIndex( 1, -1,  0), ToIndex( 1, -1, -1), ToIndex( 1,  0, -1) },
+            { ToIndex( 1,  0, -1), ToIndex( 1,  1, -1), ToIndex( 1,  1,  0) },
+            { ToIndex( 1,  1,  0), ToIndex( 1,  1,  1), ToIndex( 1,  0,  1) },
+        },
+        // Face::NegY
+        {
+            { ToIndex( 1, -1,  0), ToIndex( 1, -1,  1), ToIndex( 0, -1,  1) },
+            { ToIndex( 0, -1,  1), ToIndex(-1, -1,  1), ToIndex(-1, -1,  0) },
+            { ToIndex(-1, -1,  0), ToIndex(-1, -1, -1), ToIndex( 0, -1, -1) },
+            { ToIndex( 0, -1, -1), ToIndex( 1, -1, -1), ToIndex( 1, -1,  0) },
+        },
+        // Face::PosY
+        {
+            { ToIndex( 1,  1,  0), ToIndex( 1,  1, -1), ToIndex( 0,  1, -1) },
+            { ToIndex( 0,  1, -1), ToIndex(-1,  1, -1), ToIndex(-1,  1,  0) },
+            { ToIndex(-1,  1,  0), ToIndex(-1,  1,  1), ToIndex( 0,  1,  1) },
+            { ToIndex( 0,  1,  1), ToIndex( 1,  1,  1), ToIndex( 1,  1,  0) },
+        },
+    };
+
+    // Since ambient occlusion is determined from state of 3 blocks, there are 8 possible states.
+    // This maps the state to the corresponding ambient occlusion level (0-3).
+    constexpr int ambient_occlusion_level[8] = {
+        0, // 0b000
+        1, // 0b001
+        1, // 0b010
+        2, // 0b011
+        1, // 0b100
+        3, // 0b101
+        2, // 0b110
+        3, // 0b111
     };
 
     struct ExteriorBlockFaceBlueprint {
@@ -133,8 +191,8 @@ namespace voxels::world {
 
     void ChunkMesher::MeshInterior(const Chunk& chunk) noexcept {
         for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int z = 1; z < CHUNK_WIDTH - 1; z++) {
-                for (int x = 1; x < CHUNK_WIDTH - 1; x++) {
+            for (int x = 1; x < CHUNK_WIDTH - 1; x++) {
+                for (int z = 1; z < CHUNK_WIDTH - 1; z++) {
                     int index = ToIndex(x, y, z);
                     Block block = chunk.GetBlock(index);
                     if (block == Block::Air) {
@@ -148,12 +206,18 @@ namespace voxels::world {
                     bool negY = chunk.GetBlock(index - STRIDE_Y) == Block::Air;
                     bool posY = chunk.GetBlock(index + STRIDE_Y) == Block::Air;
 
-                    if (negZ) AddFace(index, Face::NegZ, block);
-                    if (posZ) AddFace(index, Face::PosZ, block);
-                    if (negX) AddFace(index, Face::NegX, block);
-                    if (posX) AddFace(index, Face::PosX, block);
-                    if (negY) AddFace(index, Face::NegY, block);
-                    if (posY) AddFace(index, Face::PosY, block);
+                    // if (negZ) AddFace(index, Face::NegZ, block);
+                    if (negZ) Debug_AddFace(chunk, index, Face::NegZ, block);
+                    // if (posZ) AddFace(index, Face::PosZ, block);
+                    if (posZ) Debug_AddFace(chunk, index, Face::PosZ, block);
+                    // if (negX) AddFace(index, Face::NegX, block);
+                    if (negX) Debug_AddFace(chunk, index, Face::NegX, block);
+                    // if (posX) AddFace(index, Face::PosX, block);
+                    if (posX) Debug_AddFace(chunk, index, Face::PosX, block);
+                    // if (negY) AddFace(index, Face::NegY, block);
+                    if (negY) Debug_AddFace(chunk, index, Face::NegY, block);
+                    // if (posY) AddFace(index, Face::PosY, block);
+                    if (posY) Debug_AddFace(chunk, index, Face::PosY, block);
                 }
             }
         }
@@ -215,6 +279,32 @@ namespace voxels::world {
 
         for (int i = 0; i < 4; i++) {
             uint32_t vertex_data = texture_index << 19;
+            vertex_data |= VertexIndex(index) + face_vertex_offsets[static_cast<int>(face)][i];
+            vertices_[vertex_count_ + i] = vertex_data;
+        }
+
+        indices_[index_count_ + 0] = static_cast<uint16_t>(vertex_count_ + 0);
+        indices_[index_count_ + 1] = static_cast<uint16_t>(vertex_count_ + 1);
+        indices_[index_count_ + 2] = static_cast<uint16_t>(vertex_count_ + 2);
+        indices_[index_count_ + 3] = static_cast<uint16_t>(vertex_count_ + 0);
+        indices_[index_count_ + 4] = static_cast<uint16_t>(vertex_count_ + 2);
+        indices_[index_count_ + 5] = static_cast<uint16_t>(vertex_count_ + 3);
+
+        vertex_count_ += 4;
+        index_count_ += 6;
+    }
+
+    void ChunkMesher::Debug_AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept {
+        uint8_t texture_index = voxels::world::GetTextureIndex(block, face);
+
+        for (int i = 0; i < 4; i++) {
+            bool ao_block_1 = chunk.GetBlock(index + ambient_occlusion_index_offsets[static_cast<int>(face)][i][0]) != Block::Air;
+            bool ao_block_2 = chunk.GetBlock(index + ambient_occlusion_index_offsets[static_cast<int>(face)][i][1]) != Block::Air;
+            bool ao_block_3 = chunk.GetBlock(index + ambient_occlusion_index_offsets[static_cast<int>(face)][i][2]) != Block::Air;
+            int ao_index = ao_block_3 << 2 | ao_block_2 << 1 | ao_block_1;
+
+            uint32_t vertex_data = texture_index << 19;
+            vertex_data |= ambient_occlusion_level[ao_index] << 27;
             vertex_data |= VertexIndex(index) + face_vertex_offsets[static_cast<int>(face)][i];
             vertices_[vertex_count_ + i] = vertex_data;
         }
