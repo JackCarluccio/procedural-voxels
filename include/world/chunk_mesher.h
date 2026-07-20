@@ -2,6 +2,7 @@
 
 #include "graphics/mesh.h"
 #include "world/chunk.h"
+#include "world/chunk_region.h"
 #include "world/face.h"
 
 #include <array>
@@ -18,9 +19,7 @@ namespace voxels::world {
         ChunkMesher(ChunkMesher&&) = delete;
         ChunkMesher& operator=(ChunkMesher&&) = delete;
 
-        void Init() const noexcept;
-
-        std::unique_ptr<graphics::Mesh> MeshChunk(const Chunk& chunk, const std::array<const Chunk*, 4>& neighbors) noexcept;
+        std::unique_ptr<graphics::Mesh> MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept;
 
     private:
         int vertex_count_;
@@ -29,12 +28,13 @@ namespace voxels::world {
         std::array<uint16_t, BLOCKS_PER_CHUNK / 2 * 6 * 6> indices_;
 
         void MeshInterior(const Chunk& chunk) noexcept;
-        void MeshTopFaces(const Chunk& chunk) noexcept;
-        void MeshExteriorBlockFaces(const Chunk& chunk) noexcept;
-        void MeshExteriorFaces(const Chunk& chunk, const Chunk* neighbor, Face face) noexcept;
+        void MeshExterior(const Chunk& chunk, const ChunkRegion& region) noexcept;
+        void MeshTop(const Chunk& chunk, const ChunkRegion& region) noexcept;
+        void MeshBottom(const Chunk& chunk, const ChunkRegion& region) noexcept;
 
         void AddFace(int index, Face face, Block block) noexcept;
-        void Debug_AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept;
+        void AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept;
+        void AddFace(const ChunkRegion& region, int x, int y, int z, Face face, Block block) noexcept;
 
     };
     

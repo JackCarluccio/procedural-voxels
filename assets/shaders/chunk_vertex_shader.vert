@@ -41,5 +41,5 @@ void main() {
         (vertex_data >> 19) & 0xFF // Bits 19-26 encode texture index (0-255)
     );
 
-    AmbientOcclusion = ambient_occlusion_lighting[(vertex_data >> 27) & 3];
+    AmbientOcclusion = ambient_occlusion_lighting[(vertex_data >> 27) & 0x3];
 }

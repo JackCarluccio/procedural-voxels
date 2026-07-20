@@ -18,7 +18,6 @@ namespace voxels::world {
 
     void ChunkManager::Init() const noexcept {
         chunk_generator_->Init();
-        chunk_mesher_->Init();
     }
 
     void ChunkManager::Update(const glm::vec3& player_position) noexcept {
@@ -77,15 +76,6 @@ namespace voxels::world {
         return GetChunkRegion(chunk.GetPosition());
     }
 
-    std::array<const Chunk*, 4> ChunkManager::GetCardinalNeighborPointers(const glm::ivec2& position) const noexcept {
-        return {
-            chunks_.find(position + CHUNK_CARDINAL_OFFSETS[0])->second.get(),
-            chunks_.find(position + CHUNK_CARDINAL_OFFSETS[1])->second.get(),
-            chunks_.find(position + CHUNK_CARDINAL_OFFSETS[2])->second.get(),
-            chunks_.find(position + CHUNK_CARDINAL_OFFSETS[3])->second.get()
-        };
-    }
-
     void ChunkManager::GenerateChunk(const glm::ivec2& position) noexcept {
         auto [it, inserted] = chunks_.emplace(
             std::piecewise_construct,
@@ -138,7 +128,8 @@ namespace voxels::world {
     }
 
     void ChunkManager::MeshChunk(Chunk& chunk) noexcept {
-        chunk.SetMesh(chunk_mesher_->MeshChunk(chunk, GetCardinalNeighborPointers(chunk.GetPosition())));
+        ChunkRegion chunk_region = GetChunkRegion(chunk);
+        chunk.SetMesh(chunk_mesher_->MeshChunk(chunk, chunk_region));
         chunk.SetStage(ChunkStage::Meshed);
     }
 

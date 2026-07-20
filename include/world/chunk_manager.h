@@ -56,8 +56,6 @@ namespace voxels::world {
         std::unique_ptr<ChunkMesher> chunk_mesher_;
         std::unique_ptr<ChunkQueue> chunk_queue_;
 
-        std::array<const Chunk*, 4> GetCardinalNeighborPointers(const glm::ivec2& position) const noexcept;
-
         void GenerateChunk(const glm::ivec2& position) noexcept;
         void ShapeChunk(Chunk& chunk) noexcept;
         void DecorateChunk(Chunk& chunk) noexcept;
