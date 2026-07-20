@@ -11,6 +11,9 @@ namespace voxels::world {
         Grass,
         OakLog,
         OakLeaves,
+        Sand,
+        SandStone,
+        Snow,
     };
 
 }

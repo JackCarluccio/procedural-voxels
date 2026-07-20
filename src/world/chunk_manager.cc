@@ -17,6 +17,7 @@ namespace voxels::world {
     {}
 
     void ChunkManager::Init() const noexcept {
+        chunk_generator_->Init();
         chunk_mesher_->Init();
     }
 
