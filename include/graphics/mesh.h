@@ -1,12 +1,6 @@
 #pragma once
 
-#include "graphics/element_buffer.h"
-#include "graphics/vertex_buffer.h"
-#include "graphics/vertex_array.h"
-
 #include <cstddef>
-
-#include <glm/glm.hpp>
 
 namespace voxels::graphics {
 
@@ -16,19 +10,22 @@ namespace voxels::graphics {
 
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
+        Mesh(Mesh&& other) noexcept;
+        Mesh& operator=(Mesh&& other) noexcept;
 
-        void Bind() noexcept { vertex_array_.Bind(); }
-        void Unbind() noexcept { vertex_array_.Unbind(); }
+        void Bind() noexcept;
+        void Unbind() noexcept;
 
         void LinkAttribute(unsigned int layout, int size, unsigned int type, int stride, const void* offset) noexcept;
         void LinkAttributeI(unsigned int layout, int size, unsigned int type, int stride, const void* offset) noexcept;
 
-        int GetIndexCount() const noexcept { return element_buffer_.GetCount(); }
+        int GetIndexCount() const noexcept { return index_count_; }
 
     private:
-        VertexBuffer vertex_buffer_;
-        VertexArray vertex_array_;
-        ElementBuffer element_buffer_;
+        unsigned int vertex_buffer_id_;
+        unsigned int vertex_array_id_;
+        unsigned int element_buffer_id_;
+        int index_count_;
     };
 
 }
