@@ -13,7 +13,7 @@ namespace voxels::world {
     ChunkManager::ChunkManager()
         : chunk_generator_(std::make_unique<ChunkGenerator>()),
         chunk_mesher_(std::make_unique<ChunkMesher>()),
-        chunk_queue_(std::make_unique<ChunkQueue>())
+        chunk_queue_(std::make_unique<ChunkQueue>(*this, 16))
     {}
 
     void ChunkManager::Init() const noexcept {
@@ -26,29 +26,27 @@ namespace voxels::world {
             static_cast<int>(std::floor(player_position.z / CHUNK_WIDTH))
         );
 
-        static constexpr int RENDER_DISTANCE = 10;
-        for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) {
-            for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
-                glm::ivec2 neighbor_position = player_chunk_position + glm::ivec2(x, z);
-                if (!HasChunk(neighbor_position)) {
-                    chunk_queue_->Push(neighbor_position);
-                }
+        chunk_queue_->Update(player_chunk_position);
+
+        int total_operations = 0;
+        while (total_operations < 8) {
+            if (!chunks_to_mesh_.empty()) {
+                Chunk* chunk = chunks_to_mesh_.back();
+                chunks_to_mesh_.pop_back();
+                MeshChunk(*chunk);
+                total_operations++;
+            } else if (!chunks_to_decorate_.empty()) {
+                Chunk* chunk = chunks_to_decorate_.back();
+                chunks_to_decorate_.pop_back();
+                DecorateChunk(*chunk);
+                total_operations++;
+            } else if (!chunk_queue_->IsEmpty()) {
+                glm::ivec2 position = chunk_queue_->Pop();
+                GenerateChunk(position);
+                total_operations++;
+            } else {
+                break;
             }
-        }
-
-        if (!chunks_to_decorate_.empty()) {
-            DecorateChunk(*chunks_to_decorate_.back());
-            chunks_to_decorate_.pop_back();
-        }
-
-        if (!chunks_to_mesh_.empty()) {
-            MeshChunk(*chunks_to_mesh_.back());
-            chunks_to_mesh_.pop_back();
-        }
-
-        if (!chunk_queue_->IsEmpty()) {
-            glm::ivec2 position = chunk_queue_->Pop();
-            GenerateChunk(position);
         }
     }
 

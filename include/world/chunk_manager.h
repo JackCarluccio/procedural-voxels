@@ -7,7 +7,6 @@
 #include "world/chunk_region.h"
 #include "util/ivec2_hash.h"
 
-#include <array>
 #include <memory>
 #include <unordered_map>
 #include <vector>

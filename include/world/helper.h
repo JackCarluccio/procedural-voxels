@@ -44,14 +44,6 @@ namespace voxels::world {
         glm::ivec2( 0, -1),
         glm::ivec2( 1, -1),
     };
-    constexpr glm::ivec2 CHUNK_CARDINAL_OFFSETS[4] = {
-        glm::ivec2( 0, -1),
-        glm::ivec2( 0,  1),
-        glm::ivec2(-1,  0),
-        glm::ivec2( 1,  0),
-    };
-
-    extern int INNER_INDICES[BLOCKS_PER_CHUNK_INTERIOR];
 
     constexpr int ToIndex(int x, int y, int z) noexcept {
         return z + x * STRIDE_X + y * STRIDE_Y;
