@@ -2,6 +2,7 @@
 
 #include "graphics/graphics_core.h"
 #include "graphics/camera.h"
+#include "graphics/color.h"
 #include "graphics/mesh.h"
 #include "graphics/shader_program.h"
 #include "world/helper.h"
@@ -70,7 +71,9 @@ namespace voxels::graphics {
     }
 
     void Renderer::Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks) {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        Color sky_color = scene.GetSkybox().GetColor();
+        glClearColor(sky_color.GetR(), sky_color.GetG(), sky_color.GetB(), sky_color.GetA());
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const glm::mat4 proj_view = scene.GetCamera().GetProjectionMatrix() * scene.GetCamera().GetViewMatrix();
