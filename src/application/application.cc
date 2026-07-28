@@ -1,7 +1,6 @@
 #include "application/application.h"
 
 #include "graphics/graphics_core.h"
-#include "graphics/camera.h"
 #include "graphics/renderer.h"
 #include "graphics/window.h"
 #include "input/input_manager.h"
@@ -49,15 +48,17 @@ namespace voxels::application {
             throw std::runtime_error("Failed to initialize OpenGL loader");
         }
 
-        camera_ = std::make_unique<graphics::Camera>(
+        graphics::Camera camera(
             glm::radians(45.0f),
             static_cast<float>(mode->width) / static_cast<float>(mode->height),
             0.1f,
             5000.0f
         );
 
+        scene_ = graphics::Scene(std::move(camera));
+
         renderer_ = std::make_unique<graphics::Renderer>();
-        input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), *camera_);
+        input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), scene_.GetCamera());
         chunk_manager_ = std::make_unique<world::ChunkManager>();
     }
 
@@ -98,17 +99,17 @@ namespace voxels::application {
         glfwPollEvents();
         
         if (window_->HasChangedSize()) {
-            int width = window_->GetWidth();
-            int height = window_->GetHeight();
-            camera_->SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+            float width = window_->GetWidth();
+            float height = window_->GetHeight();
+            scene_.GetCamera().SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
         }
 
         input_manager_->Update(delta_time);
-        chunk_manager_->Update(camera_->GetPosition());
+        chunk_manager_->Update(scene_.GetCamera().GetPosition());
     }
 
     void Application::Draw() {
-        renderer_->Draw(camera_.get(), chunk_manager_->GetMap());
+        renderer_->Draw(scene_, chunk_manager_->GetMap());
         window_->SwapBuffers();
     }
 

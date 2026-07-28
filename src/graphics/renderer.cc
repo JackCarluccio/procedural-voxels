@@ -69,12 +69,11 @@ namespace voxels::graphics {
         delete[] spliced_data;
     }
 
-    void Renderer::Draw(const Camera* camera, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks) {
+    void Renderer::Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const glm::mat4 proj_view = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-
+        const glm::mat4 proj_view = scene.GetCamera().GetProjectionMatrix() * scene.GetCamera().GetViewMatrix();
         shader_program->Use();
         shader_program->SetUniformMatrix4x4("proj_view", glm::value_ptr(proj_view));
 
