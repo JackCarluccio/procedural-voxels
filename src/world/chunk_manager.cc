@@ -13,7 +13,7 @@ namespace voxels::world {
     ChunkManager::ChunkManager()
         : chunk_generator_(std::make_unique<ChunkGenerator>()),
         chunk_mesher_(std::make_unique<ChunkMesher>()),
-        chunk_queue_(std::make_unique<ChunkQueue>(*this, 16))
+        chunk_queue_(std::make_unique<ChunkQueue>(16))
     {}
 
     void ChunkManager::Init() const noexcept {
@@ -28,22 +28,31 @@ namespace voxels::world {
 
         chunk_queue_->Update(player_chunk_position);
 
-        int total_operations = 0;
-        while (total_operations < 8) {
+        int operations = 0;
+        while (operations < 8) {
             if (!chunks_to_mesh_.empty()) {
                 Chunk* chunk = chunks_to_mesh_.back();
                 chunks_to_mesh_.pop_back();
+                operations++;
                 MeshChunk(*chunk);
-                total_operations++;
             } else if (!chunks_to_decorate_.empty()) {
                 Chunk* chunk = chunks_to_decorate_.back();
                 chunks_to_decorate_.pop_back();
+                operations++;
                 DecorateChunk(*chunk);
-                total_operations++;
             } else if (!chunk_queue_->IsEmpty()) {
-                glm::ivec2 position = chunk_queue_->Pop();
-                GenerateChunk(position);
-                total_operations++;
+                do {
+                    // Checking if the chunk exists now spreads out the cost of
+                    // checking all chunks when the queue is updated over multiple frames
+                    glm::ivec2 position = chunk_queue_->Pop();
+                    if (HasChunk(position)) {
+                        continue;
+                    }
+
+                    operations++;
+                    GenerateChunk(position);
+                    break;
+                } while (!chunk_queue_->IsEmpty());
             } else {
                 break;
             }

@@ -16,22 +16,16 @@ namespace voxels::world {
         }
         last_chunk_position_ = chunk_position;
 
-        EnsureRadiusFits();
-
         int index = 0;
-        for (int x = -render_radius_; x <= render_radius_; x++) {
-            for (int y = -render_radius_; y <= render_radius_; y++) {
+        const int queue_radius_squared = queue_radius_ * queue_radius_;
+        for (int x = -queue_radius_; x <= queue_radius_; x++) {
+            for (int y = -queue_radius_; y <= queue_radius_; y++) {
                 int distance = x * x + y * y;
-                if (distance > render_radius_ * render_radius_) {
-                    continue;
-                }
-
-                glm::ivec2 position = chunk_position + glm::ivec2(x, y);
-                if (chunk_manager_.HasChunk(position)) {
+                if (distance > queue_radius_squared) {
                     continue;
                 }
                 
-                queue_[index] = (Encode(x, y, distance));
+                queue_[index] = Encode(x, y, distance);
                 index++;
             }
         }
@@ -51,7 +45,7 @@ namespace voxels::world {
     }
 
     void ChunkQueue::EnsureRadiusFits() noexcept {
-        float radius = static_cast<float>(render_radius_);
+        float radius = static_cast<float>(queue_radius_);
         int upper_bound = static_cast<int>(std::numbers::pi * radius * radius + 2.0f * std::numbers::pi * radius) + 1;
         queue_.resize(upper_bound);
     }

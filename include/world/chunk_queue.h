@@ -9,20 +9,18 @@
 
 namespace voxels::world {
 
-    class ChunkManager;
-
     class ChunkQueue {
     public:
-        explicit ChunkQueue(const ChunkManager& chunk_manager, int render_radius)
-            : chunk_manager_(chunk_manager), render_radius_(render_radius) {
-            assert(render_radius_ >= 0 && "ChunkQueue render radius must be non-negative");
+        explicit ChunkQueue(int queue_radius) {
+            SetQueueRadius(queue_radius);
         }
 
-        int GetRenderRadius() const noexcept { return render_radius_; }
+        int GetQueueRadius() const noexcept { return queue_radius_; }
 
-        void SetRenderRadius(int radius) noexcept {
-            assert(radius >= 0 && "ChunkQueue render radius must be non-negative");
-            render_radius_ = radius;
+        void SetQueueRadius(int radius) noexcept {
+            assert(radius >= 0 && "ChunkQueue queue radius must be non-negative");
+            queue_radius_ = radius;
+            EnsureRadiusFits();
         }
 
         void Update(const glm::ivec2& chunk_position) noexcept;
@@ -32,13 +30,12 @@ namespace voxels::world {
         glm::ivec2 Pop() noexcept;
 
     private:
-        const ChunkManager& chunk_manager_;
-        int render_radius_;
+        int queue_radius_;
         glm::ivec2 last_chunk_position_{-123, 123};
         std::size_t size_;
         std::vector<uint64_t> queue_;
 
-        // Ensures the queue has enough capacity to hold all chunks within the render radius
+        // Ensures the queue has enough capacity to hold all chunks within the queue radius
         void EnsureRadiusFits() noexcept;
 
         // Encodes the x, y, and distance into a single 64-bit integer for faster heap operations
