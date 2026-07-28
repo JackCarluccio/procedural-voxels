@@ -1,13 +1,16 @@
 #include "application/application.h"
 
+#include "graphics/camera.h"
+#include "graphics/color.h"
 #include "graphics/graphics_core.h"
 #include "graphics/renderer.h"
+#include "graphics/skybox.h"
 #include "graphics/window.h"
 #include "input/input_manager.h"
 #include "world/chunk_manager.h"
 
 #include <stdexcept>
-#include <iostream>
+#include <utility>
 
 namespace voxels::application {
 
@@ -55,7 +58,9 @@ namespace voxels::application {
             5000.0f
         );
 
-        scene_ = graphics::Scene(std::move(camera));
+        graphics::Skybox skybox(graphics::Color(143, 217, 251));
+
+        scene_ = graphics::Scene(std::move(camera), std::move(skybox));
 
         renderer_ = std::make_unique<graphics::Renderer>();
         input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), scene_.GetCamera());
