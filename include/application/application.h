@@ -1,11 +1,12 @@
 #pragma once
 
+#include "graphics/scene.h"
+
 #include <chrono>
 #include <memory>
 #include <string>
 
 namespace voxels::graphics {
-    class Camera;
     class Renderer;
     class Window;
 }
@@ -39,7 +40,7 @@ namespace voxels::application {
         std::chrono::steady_clock::time_point last_frame_time_;
         bool is_running_;
 
-        std::unique_ptr<graphics::Camera> camera_;
+        graphics::Scene scene_;
         std::unique_ptr<graphics::Window> window_;
         std::unique_ptr<graphics::Renderer> renderer_;
         std::unique_ptr<input::InputManager> input_manager_;

@@ -6,6 +6,7 @@ namespace voxels::graphics {
 
     class Camera {
     public:
+        Camera() = default;
         explicit Camera(float fov, float aspect_ratio, float near_plane, float far_plane);
 
         glm::mat4 GetViewMatrix() const noexcept;
