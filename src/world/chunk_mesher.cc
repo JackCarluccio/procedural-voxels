@@ -141,11 +141,8 @@ namespace voxels::world {
         MeshBottom(chunk, region);
 
         auto mesh = std::make_unique<graphics::Mesh>(
-            vertices_.data(),
-            vertex_count_ * sizeof(uint32_t),
-            indices_.data(),
-            index_count_ * sizeof(uint16_t),
-            index_count_
+            vertices_.data(), vertex_count_,
+            indices_.data(), index_count_
         );
 
         mesh->LinkAttributeI(0, 1, GL_UNSIGNED_INT, sizeof(uint32_t), reinterpret_cast<const void*>(0));
