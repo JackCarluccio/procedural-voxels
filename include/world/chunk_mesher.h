@@ -6,7 +6,6 @@
 #include "world/face.h"
 
 #include <array>
-#include <memory>
 
 namespace voxels::world {
 
@@ -19,13 +18,13 @@ namespace voxels::world {
         ChunkMesher(ChunkMesher&&) = delete;
         ChunkMesher& operator=(ChunkMesher&&) = delete;
 
-        std::unique_ptr<graphics::Mesh> MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept;
+        graphics::Mesh MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept;
 
     private:
         int vertex_count_;
         int index_count_;
-        std::array<uint32_t, BLOCKS_PER_CHUNK / 2 * 6 * 4> vertices_;
-        std::array<uint16_t, BLOCKS_PER_CHUNK / 2 * 6 * 6> indices_;
+        std::array<uint32_t, 0xFFFF * 4 / 6 + 1> vertices_;
+        std::array<uint16_t, 0xFFFF> indices_;
 
         void MeshInterior(const Chunk& chunk) noexcept;
         void MeshExterior(const Chunk& chunk, const ChunkRegion& region) noexcept;

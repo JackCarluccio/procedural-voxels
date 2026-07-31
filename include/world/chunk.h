@@ -7,7 +7,8 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
+#include <optional>
+#include <utility>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -53,13 +54,13 @@ namespace voxels::world {
 
         glm::ivec2 GetPosition() const noexcept { return position_; }
 
-        const std::unique_ptr<graphics::Mesh>& GetMesh() const noexcept { return mesh_; }
-        void SetMesh(std::unique_ptr<graphics::Mesh> mesh) noexcept { mesh_ = std::move(mesh); }
+        std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
+        void SetMesh(graphics::Mesh&& mesh) noexcept { mesh_ = std::move(mesh); }
 
     private:
         ChunkStage stage_;
         glm::ivec2 position_;
-        std::unique_ptr<graphics::Mesh> mesh_;
+        std::optional<graphics::Mesh> mesh_;
         std::array<Block, BLOCKS_PER_CHUNK> blocks_;
     };
 

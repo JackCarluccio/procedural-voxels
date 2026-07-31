@@ -4,6 +4,7 @@
 #include "util/ivec2_hash.h"
 #include "world/chunk.h"
 
+#include <memory>
 #include <unordered_map>
 
 #include <glm/vec2.hpp>
