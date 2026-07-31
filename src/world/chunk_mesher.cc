@@ -131,7 +131,7 @@ namespace {
 
 namespace voxels::world {
 
-    std::unique_ptr<graphics::Mesh> ChunkMesher::MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept {
+    graphics::Mesh ChunkMesher::MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept {
         vertex_count_ = 0;
         index_count_ = 0;
         
@@ -140,15 +140,12 @@ namespace voxels::world {
         MeshTop(chunk, region);
         MeshBottom(chunk, region);
 
-        auto mesh = std::make_unique<graphics::Mesh>(
-            vertices_.data(),
-            vertex_count_ * sizeof(uint32_t),
-            indices_.data(),
-            index_count_ * sizeof(uint16_t),
-            index_count_
+        auto mesh = graphics::Mesh(
+            vertices_.data(), vertex_count_,
+            indices_.data(), index_count_
         );
 
-        mesh->LinkAttributeI(0, 1, GL_UNSIGNED_INT, sizeof(uint32_t), reinterpret_cast<const void*>(0));
+        mesh.LinkAttributeI(0, 1, GL_UNSIGNED_INT, sizeof(uint32_t), reinterpret_cast<const void*>(0));
 
         return mesh;
     }

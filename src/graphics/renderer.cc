@@ -83,8 +83,8 @@ namespace voxels::graphics {
         glBindTexture(GL_TEXTURE_2D, texture_atlas_id);
 
         for (const auto& [position, chunk] : chunks) {
-            const std::unique_ptr<graphics::Mesh>& chunk_mesh = chunk->GetMesh();
-            if (chunk_mesh == nullptr) {
+            auto& chunk_mesh = chunk->GetMesh();
+            if (!chunk_mesh) {
                 continue;
             }
 
