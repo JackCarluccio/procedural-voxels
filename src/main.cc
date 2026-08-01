@@ -5,7 +5,17 @@
 
 int main() {
 	try {
-		voxels::application::Application app("Voxels");
+		voxels::application::Settings settings = {
+			.app_settings {
+				.title = "Voxels",
+			},
+
+			.user_settings {
+				.vsync = false,
+			}
+		};
+
+		voxels::application::Application app(settings);
 		app.Init();
 		app.Run();
 	} catch (const std::exception& e) {

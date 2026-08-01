@@ -23,7 +23,19 @@ namespace {
 
 namespace voxels::graphics {
 
-    void Renderer::Init() {
+    void Renderer::Init(const application::Settings& settings) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+
+        glEnable(GL_DEPTH_TEST);
+
+        glEnable(GL_FRAMEBUFFER_SRGB);
+
+        if (settings.user_settings.vsync) {
+            glfwSwapInterval(0);
+        }
+
         shader_program = std::make_unique<graphics::ShaderProgram>(
             "assets/shaders/chunk_vertex_shader.vert",
             "assets/shaders/chunk_fragment_shader.frag"

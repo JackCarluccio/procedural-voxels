@@ -90,8 +90,8 @@ namespace voxels::graphics {
 	void Window::OnResize(int width, int height) noexcept {
 		width_ = width;
 		height_ = height;
+		hasChangedSize_ = true; 
 		glViewport(0, 0, width, height);
-		hasChangedSize_ = true;
 	}
 
 }
