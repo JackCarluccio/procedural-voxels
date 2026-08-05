@@ -15,7 +15,8 @@
 namespace voxels::application {
 
     Application::Application(const Settings& settings)
-        : settings_(settings)
+        : settings_(settings),
+        start_time_(std::chrono::steady_clock::now())
     {
         InitGLFW();
         ConfigureGLFW();
@@ -24,13 +25,11 @@ namespace voxels::application {
         
         LoadOpenGL();
         
-        LockCursor();
-        
         CreateScene();
 
         renderer_ = std::make_unique<graphics::Renderer>();
+        input_manager_ = std::make_unique<input::InputManager>(settings_, window_->GetGLFWwindow(), scene_->GetCamera());
         chunk_manager_ = std::make_unique<world::ChunkManager>();
-        input_manager_ = std::make_unique<input::InputManager>(window_->GetGLFWwindow(), scene_->GetCamera());
     }
 
     Application::~Application() {
@@ -40,8 +39,6 @@ namespace voxels::application {
     void Application::Init() {
         renderer_->Init(settings_);
         chunk_manager_->Init();
-
-        start_time_ = std::chrono::steady_clock::now();
     }
 
     void Application::Run() {
@@ -109,11 +106,6 @@ namespace voxels::application {
             primary_monitor
         );
         window_->MakeContextCurrent();
-    }
-
-    void Application::LockCursor() {
-        glfwSetInputMode(window_->GetGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetInputMode(window_->GetGLFWwindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
     void Application::LoadOpenGL() {

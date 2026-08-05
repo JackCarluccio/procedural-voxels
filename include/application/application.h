@@ -54,8 +54,6 @@ namespace voxels::application {
         void InitGLFW();
         void ConfigureGLFW();
         void CreateWindow();
-        void LockCursor();
-        void SetVsync();
         void LoadOpenGL();
         void CreateScene();
     };
