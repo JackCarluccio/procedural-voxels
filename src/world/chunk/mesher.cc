@@ -1,10 +1,8 @@
-#include "world/chunk_mesher.h"
-
-#include "world/block.h"
-#include "world/block_data.h"
-#include "world/helper.h"
+#include "world/chunk/mesher.h"
 
 #include "graphics/graphics_core.h"
+#include "world/block.h"
+#include "world/block_data.h"
 
 #include <cstdint>
 
@@ -34,7 +32,7 @@ namespace {
     };
 
     constexpr int XYZToIndex(const Point& xyz) noexcept {
-        return ToIndex(xyz.x, xyz.y, xyz.z);
+        return chunk::Chunk::ToIndex(xyz.x, xyz.y, xyz.z);
     }
 
     constexpr Point AO_OFFSETS[6][4][3] = {
@@ -129,9 +127,9 @@ namespace {
 
 }
 
-namespace voxels::world {
+namespace voxels::world::chunk {
 
-    graphics::Mesh ChunkMesher::MeshChunk(const Chunk& chunk, const ChunkRegion& region) noexcept {
+    graphics::Mesh Mesher::MeshChunk(const Chunk& chunk, const Region& region) noexcept {
         vertex_count_ = 0;
         index_count_ = 0;
         
@@ -150,22 +148,22 @@ namespace voxels::world {
         return mesh;
     }
 
-    void ChunkMesher::MeshInterior(const Chunk& chunk) noexcept {
-        for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int x = 1; x < CHUNK_WIDTH - 1; x++) {
-                for (int z = 1; z < CHUNK_WIDTH - 1; z++) {
-                    int index = ToIndex(x, y, z);
+    void Mesher::MeshInterior(const Chunk& chunk) noexcept {
+        for (int y = 1; y < Chunk::HEIGHT - 1; y++) {
+            for (int x = 1; x < Chunk::WIDTH - 1; x++) {
+                for (int z = 1; z < Chunk::WIDTH - 1; z++) {
+                    int index = Chunk::ToIndex(x, y, z);
                     Block block = chunk.GetBlock(index);
                     if (block == Block::Air) {
                         continue;
                     }
 
-                    bool negZ = chunk.GetBlock(index - STRIDE_Z) == Block::Air;
-                    bool posZ = chunk.GetBlock(index + STRIDE_Z) == Block::Air;
-                    bool negX = chunk.GetBlock(index - STRIDE_X) == Block::Air;
-                    bool posX = chunk.GetBlock(index + STRIDE_X) == Block::Air;
-                    bool negY = chunk.GetBlock(index - STRIDE_Y) == Block::Air;
-                    bool posY = chunk.GetBlock(index + STRIDE_Y) == Block::Air;
+                    bool negZ = chunk.GetBlock(index - Chunk::STRIDE_Z) == Block::Air;
+                    bool posZ = chunk.GetBlock(index + Chunk::STRIDE_Z) == Block::Air;
+                    bool negX = chunk.GetBlock(index - Chunk::STRIDE_X) == Block::Air;
+                    bool posX = chunk.GetBlock(index + Chunk::STRIDE_X) == Block::Air;
+                    bool negY = chunk.GetBlock(index - Chunk::STRIDE_Y) == Block::Air;
+                    bool posY = chunk.GetBlock(index + Chunk::STRIDE_Y) == Block::Air;
 
                     if (negZ) AddFace(chunk, index, Face::NegZ, block);
                     if (posZ) AddFace(chunk, index, Face::PosZ, block);
@@ -178,10 +176,10 @@ namespace voxels::world {
         }
     }
 
-    void ChunkMesher::MeshExterior(const Chunk& chunk, const ChunkRegion& region) noexcept {
-        for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                int index = ToIndex(0, y, z);
+    void Mesher::MeshExterior(const Chunk& chunk, const Region& region) noexcept {
+        for (int y = 1; y < Chunk::HEIGHT - 1; y++) {
+            for (int z = 0; z < Chunk::WIDTH; z++) {
+                int index = Chunk::ToIndex(0, y, z);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
@@ -203,33 +201,33 @@ namespace voxels::world {
             }
         }
 
-        for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                int index = ToIndex(CHUNK_WIDTH - 1, y, z);
+        for (int y = 1; y < Chunk::HEIGHT - 1; y++) {
+            for (int z = 0; z < Chunk::WIDTH; z++) {
+                int index = Chunk::ToIndex(Chunk::WIDTH - 1, y, z);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
                 }
 
-                bool negZ = region.GetBlock(CHUNK_WIDTH - 1, y, z - 1) == Block::Air;
-                bool posZ = region.GetBlock(CHUNK_WIDTH - 1, y, z + 1) == Block::Air;
-                bool negX = chunk.GetBlock(CHUNK_WIDTH - 2, y, z     ) == Block::Air;
-                bool posX = region.GetBlock(CHUNK_WIDTH   , y, z     ) == Block::Air;
-                bool negY = chunk.GetBlock(CHUNK_WIDTH - 1, y - 1, z ) == Block::Air;
-                bool posY = chunk.GetBlock(CHUNK_WIDTH - 1, y + 1, z ) == Block::Air;
+                bool negZ = region.GetBlock(Chunk::WIDTH - 1, y, z - 1) == Block::Air;
+                bool posZ = region.GetBlock(Chunk::WIDTH - 1, y, z + 1) == Block::Air;
+                bool negX = chunk.GetBlock(Chunk::WIDTH - 2, y, z     ) == Block::Air;
+                bool posX = region.GetBlock(Chunk::WIDTH   , y, z     ) == Block::Air;
+                bool negY = chunk.GetBlock(Chunk::WIDTH - 1, y - 1, z ) == Block::Air;
+                bool posY = chunk.GetBlock(Chunk::WIDTH - 1, y + 1, z ) == Block::Air;
 
-                if (negZ) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::NegZ, block);
-                if (posZ) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::PosZ, block);
-                if (negX) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::NegX, block);
-                if (posX) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::PosX, block);
-                if (negY) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::NegY, block);
-                if (posY) AddFace(region, CHUNK_WIDTH - 1, y, z, Face::PosY, block);
+                if (negZ) AddFace(region, Chunk::WIDTH - 1, y, z, Face::NegZ, block);
+                if (posZ) AddFace(region, Chunk::WIDTH - 1, y, z, Face::PosZ, block);
+                if (negX) AddFace(region, Chunk::WIDTH - 1, y, z, Face::NegX, block);
+                if (posX) AddFace(region, Chunk::WIDTH - 1, y, z, Face::PosX, block);
+                if (negY) AddFace(region, Chunk::WIDTH - 1, y, z, Face::NegY, block);
+                if (posY) AddFace(region, Chunk::WIDTH - 1, y, z, Face::PosY, block);
             }
         }
 
-        for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int x = 0; x < CHUNK_WIDTH; x++) {
-                int index = ToIndex(x, y, 0);
+        for (int y = 1; y < Chunk::HEIGHT - 1; y++) {
+            for (int x = 0; x < Chunk::WIDTH; x++) {
+                int index = Chunk::ToIndex(x, y, 0);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
@@ -251,46 +249,46 @@ namespace voxels::world {
             }
         }
 
-        for (int y = 1; y < CHUNK_HEIGHT - 1; y++) {
-            for (int x = 0; x < CHUNK_WIDTH; x++) {
-                int index = ToIndex(x, y, CHUNK_WIDTH - 1);
+        for (int y = 1; y < Chunk::HEIGHT - 1; y++) {
+            for (int x = 0; x < Chunk::WIDTH; x++) {
+                int index = Chunk::ToIndex(x, y, Chunk::WIDTH - 1);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
                 }
 
-                bool negZ = chunk.GetBlock(x, y, CHUNK_WIDTH - 2     ) == Block::Air;
-                bool posZ = region.GetBlock(x, y, CHUNK_WIDTH        ) == Block::Air;
-                bool negX = region.GetBlock(x - 1, y, CHUNK_WIDTH - 1) == Block::Air;
-                bool posX = region.GetBlock(x + 1, y, CHUNK_WIDTH - 1) == Block::Air;
-                bool negY = chunk.GetBlock(x, y - 1, CHUNK_WIDTH - 1 ) == Block::Air;
-                bool posY = chunk.GetBlock(x, y + 1, CHUNK_WIDTH - 1 ) == Block::Air;
+                bool negZ = chunk.GetBlock(x, y, Chunk::WIDTH - 2     ) == Block::Air;
+                bool posZ = region.GetBlock(x, y, Chunk::WIDTH        ) == Block::Air;
+                bool negX = region.GetBlock(x - 1, y, Chunk::WIDTH - 1) == Block::Air;
+                bool posX = region.GetBlock(x + 1, y, Chunk::WIDTH - 1) == Block::Air;
+                bool negY = chunk.GetBlock(x, y - 1, Chunk::WIDTH - 1 ) == Block::Air;
+                bool posY = chunk.GetBlock(x, y + 1, Chunk::WIDTH - 1 ) == Block::Air;
 
-                if (negZ) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::NegZ, block);
-                if (posZ) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::PosZ, block);
-                if (negX) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::NegX, block);
-                if (posX) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::PosX, block);
-                if (negY) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::NegY, block);
-                if (posY) AddFace(region, x, y, CHUNK_WIDTH - 1, Face::PosY, block);
+                if (negZ) AddFace(region, x, y, Chunk::WIDTH - 1, Face::NegZ, block);
+                if (posZ) AddFace(region, x, y, Chunk::WIDTH - 1, Face::PosZ, block);
+                if (negX) AddFace(region, x, y, Chunk::WIDTH - 1, Face::NegX, block);
+                if (posX) AddFace(region, x, y, Chunk::WIDTH - 1, Face::PosX, block);
+                if (negY) AddFace(region, x, y, Chunk::WIDTH - 1, Face::NegY, block);
+                if (posY) AddFace(region, x, y, Chunk::WIDTH - 1, Face::PosY, block);
             }
         }
     
     }
 
-    void ChunkMesher::MeshTop(const Chunk& chunk, const ChunkRegion& region) noexcept {
-        for (int x = 0; x < CHUNK_WIDTH; x++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                int index = ToIndex(x, CHUNK_HEIGHT - 1, z);
+    void Mesher::MeshTop(const Chunk& chunk, const Region& region) noexcept {
+        for (int x = 0; x < Chunk::WIDTH; x++) {
+            for (int z = 0; z < Chunk::WIDTH; z++) {
+                int index = Chunk::ToIndex(x, Chunk::HEIGHT - 1, z);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
                 }
 
-                bool negZ = region.GetBlock(x, CHUNK_HEIGHT - 1, z - 1) == Block::Air;
-                bool posZ = region.GetBlock(x, CHUNK_HEIGHT - 1, z + 1) == Block::Air;
-                bool negX = region.GetBlock(x - 1, CHUNK_HEIGHT - 1, z) == Block::Air;
-                bool posX = region.GetBlock(x + 1, CHUNK_HEIGHT - 1, z) == Block::Air;
-                bool negY = chunk.GetBlock(x, CHUNK_HEIGHT - 2, z     ) == Block::Air;
+                bool negZ = region.GetBlock(x, Chunk::HEIGHT - 1, z - 1) == Block::Air;
+                bool posZ = region.GetBlock(x, Chunk::HEIGHT - 1, z + 1) == Block::Air;
+                bool negX = region.GetBlock(x - 1, Chunk::HEIGHT - 1, z) == Block::Air;
+                bool posX = region.GetBlock(x + 1, Chunk::HEIGHT - 1, z) == Block::Air;
+                bool negY = chunk.GetBlock(x, Chunk::HEIGHT - 2, z     ) == Block::Air;
 
                 // No ambient occlusion since it would require blocks above the chunk
                 if (negZ) AddFace(index, Face::NegZ, block);
@@ -303,10 +301,10 @@ namespace voxels::world {
         }
     }
 
-    void ChunkMesher::MeshBottom(const Chunk& chunk, const ChunkRegion& region) noexcept {
-        for (int x = 0; x < CHUNK_WIDTH; x++) {
-            for (int z = 0; z < CHUNK_WIDTH; z++) {
-                int index = ToIndex(x, 0, z);
+    void Mesher::MeshBottom(const Chunk& chunk, const Region& region) noexcept {
+        for (int x = 0; x < Chunk::WIDTH; x++) {
+            for (int z = 0; z < Chunk::WIDTH; z++) {
+                int index = Chunk::ToIndex(x, 0, z);
                 Block block = chunk.GetBlock(index);
                 if (block == Block::Air) {
                     continue;
@@ -330,7 +328,7 @@ namespace voxels::world {
     }
 
     // Adds a face to the mesh without calculating ambient occlusion.
-    void ChunkMesher::AddFace(int index, Face face, Block block) noexcept {
+    void Mesher::AddFace(int index, Face face, Block block) noexcept {
         uint8_t texture_index = voxels::world::GetTextureIndex(block, face);
 
         for (int i = 0; i < 4; i++) {
@@ -351,7 +349,7 @@ namespace voxels::world {
     }
 
     // Adds a face to the mesh and calculates ambient occlusion. Must be an interior block.
-    void ChunkMesher::AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept {
+    void Mesher::AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept {
         AddFace(index, face, block);
 
         // Apply AO to the last 4 vertices added
@@ -367,8 +365,8 @@ namespace voxels::world {
     }
 
     // Adds a face to the mesh and calculates ambient occlusion. Should be an exterior block.
-    void ChunkMesher::AddFace(const ChunkRegion& region, int x, int y, int z, Face face, Block block) noexcept {
-        AddFace(ToIndex(x, y, z), face, block);
+    void Mesher::AddFace(const Region& region, int x, int y, int z, Face face, Block block) noexcept {
+        AddFace(Chunk::ToIndex(x, y, z), face, block);
 
         // Apply AO to the last 4 vertices added
         for (int i = 0; i < 4; i++) {

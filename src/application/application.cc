@@ -7,7 +7,7 @@
 #include "graphics/skybox.h"
 #include "graphics/window.h"
 #include "input/input_manager.h"
-#include "world/chunk_manager.h"
+#include "world/chunk/manager.h"
 
 #include <stdexcept>
 #include <utility>
@@ -29,7 +29,7 @@ namespace voxels::application {
 
         renderer_ = std::make_unique<graphics::Renderer>();
         input_manager_ = std::make_unique<input::InputManager>(settings_, window_->GetGLFWwindow(), scene_->GetCamera());
-        chunk_manager_ = std::make_unique<world::ChunkManager>();
+        chunk_manager_ = std::make_unique<world::chunk::Manager>();
     }
 
     Application::~Application() {

@@ -5,7 +5,7 @@
 #include "graphics/color.h"
 #include "graphics/mesh.h"
 #include "graphics/shader_program.h"
-#include "world/helper.h"
+#include "world/chunk/chunk.h"
 
 #include <memory>
 
@@ -82,7 +82,7 @@ namespace voxels::graphics {
         delete[] spliced_data;
     }
 
-    void Renderer::Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks) {
+    void Renderer::Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::chunk::Chunk>, voxels::util::IVec2Hash>& chunks) {
         Color sky_color = scene.GetSkybox().GetColor();
         glClearColor(sky_color.GetR(), sky_color.GetG(), sky_color.GetB(), sky_color.GetA());
 
@@ -100,7 +100,7 @@ namespace voxels::graphics {
                 continue;
             }
 
-            shader_program->SetUniform2i("chunk_world_position", position.x * world::CHUNK_WIDTH, position.y * world::CHUNK_WIDTH);
+            shader_program->SetUniform2i("chunk_world_position", position.x * world::chunk::Chunk::WIDTH, position.y * world::chunk::Chunk::WIDTH);
 
             chunk_mesh->Bind();
             glDrawElements(GL_TRIANGLES, chunk_mesh->GetIndexCount(), GL_UNSIGNED_SHORT, nullptr);
