@@ -1,5 +1,7 @@
 #pragma once
 
+#include "application/settings.h"
+
 struct GLFWwindow;
 
 namespace voxels::graphics {
@@ -10,23 +12,24 @@ namespace voxels::input {
 
     class InputManager {
     public:
-        explicit InputManager(GLFWwindow* window, graphics::Camera& camera);
+        explicit InputManager(const application::Settings& settings, GLFWwindow* window, graphics::Camera& camera);
 
         InputManager(const InputManager&) = delete;
         InputManager& operator=(const InputManager&) = delete;
-        InputManager(InputManager&&) = delete;
-        InputManager& operator=(InputManager&&) = delete;
 
-        void Update(float delta_time) noexcept;
+        bool Update(float delta_time) noexcept;
 
     private:
         GLFWwindow* window_;
         graphics::Camera& camera_;
 
+        float camera_speed_;
+        float camera_sensitivity_;
+
         double last_cursor_x_;
         double last_cursor_y_;
-        bool first_mouse_input_;
 
+        bool CheckForClosure() const noexcept;
         void ProcessCameraMovement(float delta_time) noexcept;
         void ProcessCameraRotation() noexcept;
     };

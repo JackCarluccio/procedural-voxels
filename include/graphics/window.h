@@ -25,8 +25,11 @@ namespace voxels::graphics {
 
 		int GetWidth() const noexcept { return width_; }
 		int GetHeight() const noexcept { return height_; }
-		const std::string& GetTitle() const noexcept { return title_; }
 		GLFWwindow* GetGLFWwindow() const noexcept { return window_; }
+		
+		float GetAspectRatio() const noexcept {
+			return static_cast<float>(width_) / static_cast<float>(height_);
+		}
 
 	private:
 		// Callback for GLFW window resizing events

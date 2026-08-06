@@ -1,10 +1,10 @@
 #pragma once
 
-#include "world/chunk.h"
-#include "world/chunk_generator.h"
-#include "world/chunk_mesher.h"
-#include "world/chunk_queue.h"
-#include "world/chunk_region.h"
+#include "world/chunk/chunk.h"
+#include "world/chunk/generator.h"
+#include "world/chunk/mesher.h"
+#include "world/chunk/queue.h"
+#include "world/chunk/region.h"
 #include "util/ivec2_hash.h"
 
 #include <memory>
@@ -13,18 +13,16 @@
 
 #include <glm/glm.hpp>
 
-namespace voxels::world {
+namespace voxels::world::chunk {
 
-    class ChunkManager {
+    class Manager {
     public:
-        ChunkManager();
+        Manager();
 
-        ChunkManager(const ChunkManager&) = delete;
-        ChunkManager& operator=(const ChunkManager&) = delete;
-        ChunkManager(ChunkManager&&) = delete;
-        ChunkManager& operator=(ChunkManager&&) = delete;
+        Manager(Manager&&) = delete;
+        Manager& operator=(Manager&&) = delete;
 
-        void Init() const noexcept;
+        void Init() noexcept;
         void Update(const glm::vec3& player_position) noexcept;
 
         bool HasChunk(const glm::ivec2& position) const noexcept {
@@ -39,8 +37,8 @@ namespace voxels::world {
             return *chunks_.find(position)->second;
         };
 
-        ChunkRegion GetChunkRegion(const glm::ivec2& position) noexcept;
-        ChunkRegion GetChunkRegion(const Chunk& chunk) noexcept;
+        Region GetRegion(const glm::ivec2& position) noexcept;
+        Region GetRegion(const Chunk& chunk) noexcept { return GetRegion(chunk.GetPosition()); }
 
         const std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash>& GetMap() noexcept {
             return chunks_;
@@ -51,9 +49,9 @@ namespace voxels::world {
         std::vector<Chunk*> chunks_to_decorate_;
         std::vector<Chunk*> chunks_to_mesh_;
 
-        std::unique_ptr<ChunkGenerator> chunk_generator_;
-        std::unique_ptr<ChunkMesher> chunk_mesher_;
-        std::unique_ptr<ChunkQueue> chunk_queue_;
+        Generator generator_;
+        Mesher mesher_;
+        Queue queue_;
 
         void GenerateChunk(const glm::ivec2& position) noexcept;
         void ShapeChunk(Chunk& chunk) noexcept;

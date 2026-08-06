@@ -1,6 +1,6 @@
 #include "world/biome/biome_data.h"
 
-#include "world/feature/feature/oak_tree.h"
+#include "world/feature/features/oak_tree.h"
 
 #include <memory>
 

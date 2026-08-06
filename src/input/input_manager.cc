@@ -1,20 +1,33 @@
 #include "input/input_manager.h"
 
-#include "graphics/graphics_core.h"
 #include "graphics/camera.h"
+#include "graphics/graphics_core.h"
 
 #include <glm/glm.hpp>
 
 namespace voxels::input {
 
-    InputManager::InputManager(GLFWwindow* window, graphics::Camera& camera) : window_(window), camera_(camera) {
+    InputManager::InputManager(const application::Settings& settings, GLFWwindow* window, graphics::Camera& camera)
+        : window_(window),
+        camera_(camera),
+        camera_speed_(settings.user_settings.camera_speed),
+        camera_sensitivity_(settings.user_settings.camera_sensitivity)
+    {
         glfwGetCursorPos(window_, &last_cursor_x_, &last_cursor_y_);
-        first_mouse_input_ = true;
+
+        glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window_, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
-    void InputManager::Update(float delta_time) noexcept {
+    bool InputManager::Update(float delta_time) noexcept {
         ProcessCameraMovement(delta_time);
         ProcessCameraRotation();
+
+        return CheckForClosure();
+    }
+
+    bool InputManager::CheckForClosure() const noexcept {
+        return glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS;
     }
 
     void InputManager::ProcessCameraMovement(float delta_time) noexcept {
@@ -51,7 +64,7 @@ namespace voxels::input {
             return;
         }
 
-        move_direction = glm::normalize(move_direction) * (delta_time * 96.0f);
+        move_direction = glm::normalize(move_direction) * (delta_time * camera_speed_);
         camera_.SetPosition(camera_.GetPosition() + move_direction);
     }
 
@@ -62,8 +75,8 @@ namespace voxels::input {
         float x_delta = static_cast<float>(cursor_x - last_cursor_x_);
         float y_delta = static_cast<float>(last_cursor_y_ - cursor_y);
 
-        camera_.SetYaw(camera_.GetYaw() + x_delta * 0.0015f);
-        camera_.SetPitch(camera_.GetPitch() + y_delta * 0.0015f);
+        camera_.SetYaw(camera_.GetYaw() + x_delta * camera_sensitivity_);
+        camera_.SetPitch(camera_.GetPitch() + y_delta * camera_sensitivity_);
 
         last_cursor_x_ = cursor_x;
         last_cursor_y_ = cursor_y;

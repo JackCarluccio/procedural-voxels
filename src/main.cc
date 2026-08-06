@@ -5,7 +5,20 @@
 
 int main() {
 	try {
-		voxels::application::Application app("Voxels");
+		voxels::application::Settings settings = {
+			.app_settings {
+				.title = "Voxels",
+			},
+
+			.user_settings {
+				.vsync = false,
+
+				.camera_speed = 64.0f,
+				.camera_sensitivity = 0.0015f,
+			}
+		};
+
+		voxels::application::Application app(settings);
 		app.Init();
 		app.Run();
 	} catch (const std::exception& e) {

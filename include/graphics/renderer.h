@@ -1,12 +1,17 @@
 #pragma once
 
+#include "application/settings.h"
 #include "graphics/scene.h"
 #include "util/ivec2_hash.h"
-#include "world/chunk.h"
 
+#include <memory>
 #include <unordered_map>
 
 #include <glm/vec2.hpp>
+
+namespace voxels::world::chunk {
+    class Chunk;
+}
 
 namespace voxels::graphics {
 
@@ -19,8 +24,8 @@ namespace voxels::graphics {
         Renderer(Renderer&&) = delete;
         Renderer& operator=(Renderer&&) = delete;
 
-        void Init();
-        void Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::Chunk>, voxels::util::IVec2Hash>& chunks);
+        void Init(const application::Settings& settings);
+        void Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::chunk::Chunk>, voxels::util::IVec2Hash>& chunks);
 
     };
 

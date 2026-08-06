@@ -7,18 +7,18 @@
 #include <cstdint>
 #include <vector>
 
-namespace voxels::world {
+namespace voxels::world::chunk {
 
-    class ChunkQueue {
+    class Queue {
     public:
-        explicit ChunkQueue(int queue_radius) {
+        explicit Queue(int queue_radius) {
             SetQueueRadius(queue_radius);
         }
 
         int GetQueueRadius() const noexcept { return queue_radius_; }
 
         void SetQueueRadius(int radius) noexcept {
-            assert(radius >= 0 && "ChunkQueue queue radius must be non-negative");
+            assert(radius >= 0 && "Queue radius must be non-negative");
             queue_radius_ = radius;
             EnsureRadiusFits();
         }

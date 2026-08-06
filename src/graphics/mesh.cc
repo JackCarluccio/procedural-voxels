@@ -4,9 +4,7 @@
 
 namespace voxels::graphics {
 
-	Mesh::Mesh(const void* vertices, size_t vertices_size, const void* indices, size_t indices_size, int index_count)
-		: index_count_(index_count)
-	{
+	void Mesh::Construct(const void* vertices, size_t vertices_size, const void* indices, size_t indices_size) {
 		glGenBuffers(1, &vertex_buffer_id_);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
         glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertices_size), vertices, GL_STATIC_DRAW);
@@ -17,6 +15,12 @@ namespace voxels::graphics {
 		glGenBuffers(1, &element_buffer_id_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_id_);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indices_size), indices, GL_STATIC_DRAW);
+	}
+
+	Mesh::~Mesh() {
+		glDeleteBuffers(1, &vertex_buffer_id_);
+		glDeleteVertexArrays(1, &vertex_array_id_);
+		glDeleteBuffers(1, &element_buffer_id_);
 	}
 
 	Mesh::Mesh(Mesh&& other) noexcept

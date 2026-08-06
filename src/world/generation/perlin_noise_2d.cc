@@ -1,6 +1,6 @@
 #include "world/generation/perlin_noise_2d.h"
 
-#include "world/helper.h"
+#include "world/chunk/chunk.h"
 
 #include <cmath>
 #include <cstdint>
@@ -140,7 +140,7 @@ namespace {
                 float noise = ((i_1 - i_0) * weight_y + i_0) * params.amplitude;
 
                 params.map[
-                    (index_y + params.index_y_offset) + (index_x + params.index_x_offset) * voxels::world::CHUNK_WIDTH
+                    (index_y + params.index_y_offset) + (index_x + params.index_x_offset) * voxels::world::chunk::Chunk::WIDTH
                 ] += noise;
             }
         }
@@ -185,14 +185,14 @@ namespace voxels::world::generation {
 
         for (int i = 0; i < octaves_; i++) {
             // High frequencies may require sampling multiple lattice cells
-            int cells_per_axis = static_cast<int>(static_cast<float>(CHUNK_WIDTH) * params.frequency);
+            int cells_per_axis = static_cast<int>(static_cast<float>(chunk::Chunk::WIDTH) * params.frequency);
             if (cells_per_axis == 0) {
                 // Frequency is low enough, sample a single lattice cell
                 params.x_offset = x * params.frequency;
                 params.y_offset = y * params.frequency;
                 params.index_x_offset = 0;
                 params.index_y_offset = 0;
-                params.samples_per_axis = CHUNK_WIDTH;
+                params.samples_per_axis = chunk::Chunk::WIDTH;
                 SampleMap2D(params);
             } else {
                 // Frequency is too high, so we need to sample multiple lattice cells and stitch them together
@@ -200,9 +200,9 @@ namespace voxels::world::generation {
                     for (int cell_offset_y = 0; cell_offset_y < cells_per_axis; cell_offset_y++) {
                         params.x_offset = x * params.frequency + cell_offset_x;
                         params.y_offset = y * params.frequency + cell_offset_y;
-                        params.index_x_offset = (CHUNK_WIDTH / cells_per_axis) * cell_offset_x;
-                        params.index_y_offset = (CHUNK_WIDTH / cells_per_axis) * cell_offset_y;
-                        params.samples_per_axis = CHUNK_WIDTH / cells_per_axis;
+                        params.index_x_offset = (chunk::Chunk::WIDTH / cells_per_axis) * cell_offset_x;
+                        params.index_y_offset = (chunk::Chunk::WIDTH / cells_per_axis) * cell_offset_y;
+                        params.samples_per_axis = chunk::Chunk::WIDTH / cells_per_axis;
                         SampleMap2D(params);
                     }
                 }

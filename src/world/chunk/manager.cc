@@ -1,32 +1,48 @@
-#include "world/chunk_manager.h"
+#include "world/chunk/manager.h"
 
 #include "world/block.h"
-#include "world/chunk_stage.h"
-#include "world/helper.h"
+#include "world/chunk/stage.h"
 
 #include <cmath>
 #include <tuple>
 #include <utility>
 
-namespace voxels::world {
+#include <glm/vec2.hpp>
 
-    ChunkManager::ChunkManager()
-        : chunk_generator_(std::make_unique<ChunkGenerator>()),
-        chunk_mesher_(std::make_unique<ChunkMesher>()),
-        chunk_queue_(std::make_unique<ChunkQueue>(16))
+namespace {
+
+    constexpr glm::ivec2 CHUNK_OFFSETS[8] = {
+        glm::ivec2( 1,  0),
+        glm::ivec2( 1,  1),
+        glm::ivec2( 0,  1),
+        glm::ivec2(-1,  1),
+        glm::ivec2(-1,  0),
+        glm::ivec2(-1, -1),
+        glm::ivec2( 0, -1),
+        glm::ivec2( 1, -1),
+    };
+
+}
+
+namespace voxels::world::chunk {
+
+    Manager::Manager()
+        : generator_(),
+        mesher_(),
+        queue_(16)
     {}
 
-    void ChunkManager::Init() const noexcept {
-        chunk_generator_->Init();
+    void Manager::Init() noexcept {
+        generator_.Init();
     }
 
-    void ChunkManager::Update(const glm::vec3& player_position) noexcept {
+    void Manager::Update(const glm::vec3& player_position) noexcept {
         glm::ivec2 player_chunk_position = glm::ivec2(
-            static_cast<int>(std::floor(player_position.x / CHUNK_WIDTH)),
-            static_cast<int>(std::floor(player_position.z / CHUNK_WIDTH))
+            static_cast<int>(std::floor(player_position.x / Chunk::WIDTH)),
+            static_cast<int>(std::floor(player_position.z / Chunk::WIDTH))
         );
 
-        chunk_queue_->Update(player_chunk_position);
+        queue_.Update(player_chunk_position);
 
         int operations = 0;
         while (operations < 8) {
@@ -40,11 +56,11 @@ namespace voxels::world {
                 chunks_to_decorate_.pop_back();
                 operations++;
                 DecorateChunk(*chunk);
-            } else if (!chunk_queue_->IsEmpty()) {
+            } else if (!queue_.IsEmpty()) {
                 do {
                     // Checking if the chunk exists now spreads out the cost of
                     // checking all chunks when the queue is updated over multiple frames
-                    glm::ivec2 position = chunk_queue_->Pop();
+                    glm::ivec2 position = queue_.Pop();
                     if (HasChunk(position)) {
                         continue;
                     }
@@ -52,15 +68,15 @@ namespace voxels::world {
                     operations++;
                     GenerateChunk(position);
                     break;
-                } while (!chunk_queue_->IsEmpty());
+                } while (!queue_.IsEmpty());
             } else {
                 break;
             }
         }
     }
 
-    ChunkRegion ChunkManager::GetChunkRegion(const glm::ivec2& position) noexcept {
-        return ChunkRegion({{
+    Region Manager::GetRegion(const glm::ivec2& position) noexcept {
+        return Region({{
             {{
                 chunks_.find(position + glm::ivec2(-1, -1))->second.get(),
                 chunks_.find(position + glm::ivec2(-1, 0 ))->second.get(),
@@ -79,11 +95,7 @@ namespace voxels::world {
         }});
     }
 
-    ChunkRegion ChunkManager::GetChunkRegion(const Chunk& chunk) noexcept {
-        return GetChunkRegion(chunk.GetPosition());
-    }
-
-    void ChunkManager::GenerateChunk(const glm::ivec2& position) noexcept {
+    void Manager::GenerateChunk(const glm::ivec2& position) noexcept {
         auto [it, inserted] = chunks_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(position),
@@ -97,9 +109,9 @@ namespace voxels::world {
         ShapeChunk(*it->second);
     }
 
-    void ChunkManager::ShapeChunk(Chunk& chunk) noexcept {
-        chunk_generator_->Shape(chunk);
-        chunk.SetStage(ChunkStage::Shaped);
+    void Manager::ShapeChunk(Chunk& chunk) noexcept {
+        generator_.Shape(chunk);
+        chunk.SetStage(Stage::Shaped);
 
         if (IsDecoratable(chunk)) {
             chunks_to_decorate_.push_back(&chunk);
@@ -114,10 +126,10 @@ namespace voxels::world {
         }
     }
 
-    void ChunkManager::DecorateChunk(Chunk& chunk) noexcept {
-        ChunkRegion chunk_region = GetChunkRegion(chunk);
-        chunk_generator_->Decorate(chunk, chunk_region);
-        chunk.SetStage(ChunkStage::Decorated);
+    void Manager::DecorateChunk(Chunk& chunk) noexcept {
+        Region region = GetRegion(chunk);
+        generator_.Decorate(chunk, region);
+        chunk.SetStage(Stage::Decorated);
 
         if (IsMeshable(chunk)) {
             chunks_to_mesh_.push_back(&chunk);
@@ -134,20 +146,20 @@ namespace voxels::world {
         }
     }
 
-    void ChunkManager::MeshChunk(Chunk& chunk) noexcept {
-        ChunkRegion chunk_region = GetChunkRegion(chunk);
-        chunk.SetMesh(chunk_mesher_->MeshChunk(chunk, chunk_region));
-        chunk.SetStage(ChunkStage::Meshed);
+    void Manager::MeshChunk(Chunk& chunk) noexcept {
+        Region region = GetRegion(chunk);
+        chunk.SetMesh(mesher_.MeshChunk(chunk, region));
+        chunk.SetStage(Stage::Meshed);
     }
 
-    bool ChunkManager::IsDecoratable(const Chunk& chunk) const noexcept {
-        if (chunk.GetStage() != ChunkStage::Shaped) {
+    bool Manager::IsDecoratable(const Chunk& chunk) const noexcept {
+        if (chunk.GetStage() != Stage::Shaped) {
             return false;
         }
 
         for (const auto& offset : CHUNK_OFFSETS) {
             auto other_chunk = chunks_.find(chunk.GetPosition() + offset);
-            if (other_chunk == chunks_.end() || other_chunk->second->GetStage() < ChunkStage::Shaped) {
+            if (other_chunk == chunks_.end() || other_chunk->second->GetStage() < Stage::Shaped) {
                 return false;
             }
         }
@@ -155,14 +167,14 @@ namespace voxels::world {
         return true;
     }
 
-    bool ChunkManager::IsMeshable(const Chunk& chunk) const noexcept {
-        if (chunk.GetStage() != ChunkStage::Decorated) {
+    bool Manager::IsMeshable(const Chunk& chunk) const noexcept {
+        if (chunk.GetStage() != Stage::Decorated) {
             return false;
         }
 
         for (const auto& offset : CHUNK_OFFSETS) {
             auto other_chunk = chunks_.find(chunk.GetPosition() + offset);
-            if (other_chunk == chunks_.end() || other_chunk->second->GetStage() < ChunkStage::Decorated) {
+            if (other_chunk == chunks_.end() || other_chunk->second->GetStage() < Stage::Decorated) {
                 return false;
             }
         }

@@ -1,8 +1,8 @@
 #pragma once
 
-namespace voxels::world {
+namespace voxels::world::chunk {
 
-    enum class ChunkStage {
+    enum class Stage {
         Empty = 0,
         Shaped,
         Decorated,
