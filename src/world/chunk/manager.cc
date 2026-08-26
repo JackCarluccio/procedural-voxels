@@ -1,6 +1,5 @@
 #include "world/chunk/manager.h"
 
-#include "world/block.h"
 #include "world/chunk/stage.h"
 
 #include <cmath>

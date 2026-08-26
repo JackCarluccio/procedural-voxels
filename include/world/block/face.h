@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-namespace voxels::world {
+namespace voxels::world::block {
 
-    enum class Face : uint8_t {
+    enum class Face {
         NegZ = 0,
         PosZ = 1,
         NegX = 2,

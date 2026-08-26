@@ -3,7 +3,7 @@
 #include "util/ivec2_hash.h"
 #include "world/biome/biome.h"
 #include "world/biome/biome_data.h"
-#include "world/block.h"
+#include "world/block/block.h"
 #include "world/generation/linear_spline.h"
 #include "world/generation/perlin_noise_2d.h"
 
@@ -76,12 +76,12 @@ namespace voxels::world::chunk {
         void FillChunk(Chunk& chunk, const uint8_t* height_map) noexcept {
             // Since block layout follows [y][x][z], we can fill all blocks up to the minimum terrain height with stone.
             int min_height = *std::min_element(height_map, height_map + Chunk::SLICE_VOLUME);
-            std::memset(chunk.GetBlocksPointer(), static_cast<int>(Block::Stone), Chunk::SLICE_VOLUME * (min_height + 1));
+            std::memset(chunk.GetBlocksPointer(), static_cast<int>(block::Block::Stone), Chunk::SLICE_VOLUME * (min_height + 1));
     
             // Fill all blocks above the minimum terrain height with air.
             std::memset(
                 chunk.GetBlocksPointer() + (min_height + 1) * Chunk::SLICE_VOLUME,
-                static_cast<int>(Block::Air),
+                static_cast<int>(block::Block::Air),
                 (Chunk::HEIGHT - (min_height + 1)) * Chunk::SLICE_VOLUME
             );
 
@@ -89,7 +89,7 @@ namespace voxels::world::chunk {
                 for (int z = 0; z < Chunk::WIDTH; z++) {
                     int terrainHeight = height_map[z + x * Chunk::WIDTH];
                     for (int y = min_height + 1; y <= terrainHeight; y++) {
-                        chunk.SetBlock(x, y, z, Block::Stone);
+                        chunk.SetBlock(x, y, z, block::Block::Stone);
                     }
                 }
             }
@@ -99,8 +99,8 @@ namespace voxels::world::chunk {
             for (int x = 0; x < Chunk::WIDTH; x++) {
                 for (int z = 0; z < Chunk::WIDTH; z++) {
                     int surface_level = height_map[z + x * Chunk::WIDTH];
-                    Block surface_block = biome::GetSurfaceBlock(biome_map[z + x * Chunk::WIDTH]);
-                    Block subsurface_block = biome::GetSubsurfaceBlock(biome_map[z + x * Chunk::WIDTH]);
+                    block::Block surface_block = biome::GetSurfaceBlock(biome_map[z + x * Chunk::WIDTH]);
+                    block::Block subsurface_block = biome::GetSubsurfaceBlock(biome_map[z + x * Chunk::WIDTH]);
                     chunk.SetBlock(x, surface_level - 0, z, surface_block);
                     chunk.SetBlock(x, surface_level - 1, z, subsurface_block);
                     chunk.SetBlock(x, surface_level - 2, z, subsurface_block);

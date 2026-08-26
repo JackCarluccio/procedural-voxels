@@ -2,7 +2,6 @@
 
 #include "world/biome/temperature.h"
 #include "world/biome/humidity.h"
-#include "world/block.h"
 
 namespace voxels::world::biome {
 

@@ -1,8 +1,8 @@
 #include "world/chunk/mesher.h"
 
 #include "graphics/graphics_core.h"
-#include "world/block.h"
-#include "world/block_data.h"
+#include "world/block/block.h"
+#include "world/block/data.h"
 
 #include <cstdint>
 
@@ -128,6 +128,9 @@ namespace {
 }
 
 namespace voxels::world::chunk {
+
+    using Block = block::Block;
+    using Face = block::Face;
 
     graphics::Mesh Mesher::MeshChunk(const Chunk& chunk, const Region& region) noexcept {
         vertex_count_ = 0;
@@ -329,7 +332,7 @@ namespace voxels::world::chunk {
 
     // Adds a face to the mesh without calculating ambient occlusion.
     void Mesher::AddFace(int index, Face face, Block block) noexcept {
-        uint8_t texture_index = voxels::world::GetTextureIndex(block, face);
+        uint8_t texture_index = block::GetTextureIndex(block, face);
 
         for (int i = 0; i < 4; i++) {
             uint32_t vertex_data = texture_index << 19;

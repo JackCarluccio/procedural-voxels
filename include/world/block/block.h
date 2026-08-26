@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace voxels::world {
+namespace voxels::world::block {
 
     enum class Block : uint8_t {
         Air = 0,

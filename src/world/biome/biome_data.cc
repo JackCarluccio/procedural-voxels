@@ -6,6 +6,8 @@
 
 namespace voxels::world::biome {
 
+    using Block = block::Block;
+
     BiomeData biome_data[] {
         { // Plains
             .surface_block = Block::Grass,
