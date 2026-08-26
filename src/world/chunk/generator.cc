@@ -131,7 +131,9 @@ namespace voxels::world::chunk {
             for (auto biome : biomes) {
                 const auto& feature_commands = biome::biome_data[static_cast<int>(biome)].feature_commands;
                 for (const auto& command : feature_commands) {
-                    for (int i = 0; i < command.attempts; i++) {
+                    std::poisson_distribution<int> poisson(command.average_count);
+                    int count = poisson(rng);
+                    for (int i = 0; i < count; i++) {
                         int x = rng() % Chunk::WIDTH;
                         int z = rng() % Chunk::WIDTH;
 

@@ -8,7 +8,7 @@ namespace voxels::world::feature {
 
     struct FeatureCommand {
         std::unique_ptr<Feature> feature;
-        int attempts;
+        float average_count;
     };
 
 }
