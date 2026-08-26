@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/mesh.h"
-#include "world/block.h"
+#include "world/block/block.h"
 #include "world/chunk/stage.h"
 
 #include <array>
@@ -41,13 +41,13 @@ namespace voxels::world::chunk {
         Stage GetStage() const noexcept { return stage_; }
         void SetStage(Stage stage) noexcept { stage_ = stage; }
 
-        Block GetBlock(int index) const noexcept { return blocks_[index]; }
-        Block GetBlock(int x, int y, int z) const noexcept { return GetBlock(ToIndex(x, y, z)); }
+        block::Block GetBlock(int index) const noexcept { return blocks_[index]; }
+        block::Block GetBlock(int x, int y, int z) const noexcept { return GetBlock(ToIndex(x, y, z)); }
 
-        void SetBlock(int index, Block block) noexcept { blocks_[index] = block; }
-        void SetBlock(int x, int y, int z, Block block) noexcept { SetBlock(ToIndex(x, y, z), block); }
+        void SetBlock(int index, block::Block block) noexcept { blocks_[index] = block; }
+        void SetBlock(int x, int y, int z, block::Block block) noexcept { SetBlock(ToIndex(x, y, z), block); }
 
-        Block* GetBlocksPointer() noexcept { return blocks_.data(); }
+        block::Block* GetBlocksPointer() noexcept { return blocks_.data(); }
 
         glm::ivec2 GetPosition() const noexcept { return position_; }
 
@@ -58,7 +58,7 @@ namespace voxels::world::chunk {
         Stage stage_;
         glm::ivec2 position_;
         std::optional<graphics::Mesh> mesh_;
-        std::array<Block, CHUNK_VOLUME> blocks_;
+        std::array<block::Block, CHUNK_VOLUME> blocks_;
     };
 
 }

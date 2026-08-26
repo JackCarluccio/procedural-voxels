@@ -3,7 +3,7 @@
 #include "graphics/mesh.h"
 #include "world/chunk/chunk.h"
 #include "world/chunk/region.h"
-#include "world/face.h"
+#include "world/block/face.h"
 
 #include <array>
 
@@ -31,9 +31,9 @@ namespace voxels::world::chunk {
         void MeshTop(const Chunk& chunk, const Region& region) noexcept;
         void MeshBottom(const Chunk& chunk, const Region& region) noexcept;
 
-        void AddFace(int index, Face face, Block block) noexcept;
-        void AddFace(const Chunk& chunk, int index, Face face, Block block) noexcept;
-        void AddFace(const Region& region, int x, int y, int z, Face face, Block block) noexcept;
+        void AddFace(int index, block::Face face, block::Block block) noexcept;
+        void AddFace(const Chunk& chunk, int index, block::Face face, block::Block block) noexcept;
+        void AddFace(const Region& region, int x, int y, int z, block::Face face, block::Block block) noexcept;
 
     };
     

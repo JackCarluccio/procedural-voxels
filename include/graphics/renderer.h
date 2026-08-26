@@ -24,7 +24,7 @@ namespace voxels::graphics {
         Renderer(Renderer&&) = delete;
         Renderer& operator=(Renderer&&) = delete;
 
-        void Init(const application::Settings& settings);
+        void Init(const application::Settings& settings, unsigned char* texture_data);
         void Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::chunk::Chunk>, voxels::util::IVec2Hash>& chunks);
 
     };

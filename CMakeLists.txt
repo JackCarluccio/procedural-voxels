@@ -33,6 +33,7 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE include
   SYSTEM PRIVATE external/glfw/include
   SYSTEM PRIVATE external/stb
+  SYSTEM PRIVATE external/json
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE glad glfw glm)
 

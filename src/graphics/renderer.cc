@@ -23,7 +23,7 @@ namespace {
 
 namespace voxels::graphics {
 
-    void Renderer::Init(const application::Settings& settings) {
+    void Renderer::Init(const application::Settings& settings, unsigned char* texture_data) {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
@@ -44,29 +44,29 @@ namespace voxels::graphics {
         constexpr int DEPTH = 256;
         constexpr int TILE_SIZE = 16;
 
-        int width, height, channels;
-        unsigned char* image_data = stbi_load("assets/textures/texture_atlas.png", &width, &height, &channels, 4);
+        // int width, height, channels;
+        // unsigned char* image_data = stbi_load("assets/textures/texture_atlas.png", &width, &height, &channels, 4);
 
-        // Splice the atlas into a texture array
-        int layer = 0;
-        unsigned char* spliced_data = new unsigned char[width * height * 4];
-        for (int atlas_y = 0; atlas_y < height; atlas_y += TILE_SIZE) {
-            for (int atlas_x = 0; atlas_x < width; atlas_x += TILE_SIZE) {
-                for (int i = 0; i < TILE_SIZE; i++) {
-                    unsigned char* src = image_data + ((atlas_y + i) * width + atlas_x) * 4;
-                    unsigned char* dst = spliced_data + (layer * TILE_SIZE + i) * TILE_SIZE * 4;
-                    std::memcpy(dst, src, TILE_SIZE * 4);
-                }
+        // // Splice the atlas into a texture array
+        // int layer = 0;
+        // unsigned char* spliced_data = new unsigned char[width * height * 4];
+        // for (int atlas_y = 0; atlas_y < height; atlas_y += TILE_SIZE) {
+        //     for (int atlas_x = 0; atlas_x < width; atlas_x += TILE_SIZE) {
+        //         for (int i = 0; i < TILE_SIZE; i++) {
+        //             unsigned char* src = image_data + ((atlas_y + i) * width + atlas_x) * 4;
+        //             unsigned char* dst = spliced_data + (layer * TILE_SIZE + i) * TILE_SIZE * 4;
+        //             std::memcpy(dst, src, TILE_SIZE * 4);
+        //         }
 
-                layer++;
-            }
-        }
+        //         layer++;
+        //     }
+        // }
 
         // Create texture array to prevent bleeding between tiles when using mipmaps
         GLuint texture_array_id;
         glGenTextures(1, &texture_array_id);
         glBindTexture(GL_TEXTURE_2D_ARRAY, texture_array_id);
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_SRGB8_ALPHA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, spliced_data);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_SRGB8_ALPHA8, TILE_SIZE, TILE_SIZE, DEPTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
 
         // Use maximum anisotropic filtering to improve mipmaps at low angles
         GLfloat max_anisotropy;
@@ -77,9 +77,6 @@ namespace voxels::graphics {
         glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Blend pixels when minified
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Keep pixels crisp when magnified
-
-        stbi_image_free(image_data);
-        delete[] spliced_data;
     }
 
     void Renderer::Draw(const Scene& scene, const std::unordered_map<glm::ivec2, std::unique_ptr<world::chunk::Chunk>, voxels::util::IVec2Hash>& chunks) {
