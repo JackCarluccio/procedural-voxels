@@ -13,16 +13,8 @@ namespace voxels::world::block {
         uint8_t bottom_texture_index;
     };
 
-    constexpr Data data[256] = {
-        { 0, 0, 0 }, // Air
-        { 0, 0, 0 }, // Stone
-        { 1, 1, 1 }, // Dirt
-        { 2, 3, 1 }, // Grass
-        { 4, 5, 5 }, // Oak Log
-        { 6, 6, 6 }, // Oak Leaves
-        { 7, 7, 7 }, // Sand
-        { 8, 9, 9 }, // SandStone
-        { 10, 11, 1 } // Snow
+    inline Data data[256] = { 
+        { 0, 0, 0 } // Air
     };
 
     constexpr uint8_t GetTextureIndex(const Data& data, Face face) noexcept {

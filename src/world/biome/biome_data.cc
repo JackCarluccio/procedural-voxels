@@ -20,7 +20,7 @@ namespace voxels::world::biome {
             .feature_commands {}
         },
         { // Tundra
-            .surface_block = Block::Snow,
+            .surface_block = Block::SnowyDirt,
             .subsurface_block = Block::Dirt,
             .feature_commands {}
         },

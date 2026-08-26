@@ -7,6 +7,7 @@
 #include "graphics/skybox.h"
 #include "graphics/window.h"
 #include "input/input_manager.h"
+#include "world/block/loader.h"
 #include "world/chunk/manager.h"
 
 #include <stdexcept>
@@ -37,8 +38,12 @@ namespace voxels::application {
     }
 
     void Application::Init() {
-        renderer_->Init(settings_);
+        unsigned char* texture_data = world::block::LoadBlocks();
+
+        renderer_->Init(settings_, texture_data);
         chunk_manager_->Init();
+
+        delete[] texture_data;
     }
 
     void Application::Run() {
