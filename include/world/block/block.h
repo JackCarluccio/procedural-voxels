@@ -5,7 +5,7 @@
 
 namespace voxels::world::block {
 
-    constexpr int COUNT = 15;
+    constexpr int COUNT = 16;
 
     enum class Block : uint8_t {
         Air = 0,
@@ -23,6 +23,7 @@ namespace voxels::world::block {
         Andesite,
         Diorite,
         Granite,
+        Cactus,
     };
 
     constexpr std::string ToString(Block block) {
@@ -42,6 +43,7 @@ namespace voxels::world::block {
             case Block::Andesite: return "Andesite";
             case Block::Diorite: return "Diorite";
             case Block::Granite: return "Granite";
+            case Block::Cactus: return "Cactus";
             default: return "Unknown";
         }
     }
