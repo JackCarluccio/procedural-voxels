@@ -4,7 +4,7 @@
 
 namespace voxels::world::generation::hash {
 
-    uint32_t WORLD_SEED = 0xDEADBEEF;
+    inline uint32_t WORLD_SEED = 0xDEADBEEF;
 
     inline uint32_t FeatureSeed() noexcept {
         constexpr uint32_t FEATURE_MASK = 0x000000FF;

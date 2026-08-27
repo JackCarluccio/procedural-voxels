@@ -1,5 +1,6 @@
 #include "world/biome/biome_data.h"
 
+#include "world/feature/features/mineral_pile.h"
 #include "world/feature/features/oak_tree.h"
 
 #include <memory>
@@ -35,7 +36,12 @@ namespace voxels::world::biome {
         // Plains
         biome_data[static_cast<int>(Biome::Plains)].feature_commands.push_back({
             .feature = std::make_unique<feature::OakTree>(),
-            .attempts = 10,
+            .average_count = 10.0f,
+        });
+
+        biome_data[static_cast<int>(Biome::Mountains)].feature_commands.push_back({
+            .feature = std::make_unique<feature::MineralPile>(),
+            .average_count = 0.8f,
         });
     }
     
