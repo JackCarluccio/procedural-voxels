@@ -1,6 +1,5 @@
-#include "world/feature/features/oak_tree.h"
+#include "world/feature/features/tree.h"
 
-#include "world/block/block.h"
 #include "world/generation/hash.h"
 
 #include <cmath>
@@ -15,7 +14,7 @@ namespace voxels::world::feature {
 
     }
 
-    bool OakTree::CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept {
+    bool Tree::CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept {
         int height = GetTrunkHeight(x, z);
 
         // All blocks in the trunk must be air
@@ -39,12 +38,12 @@ namespace voxels::world::feature {
         return true;
     }
 
-    void OakTree::Generate(chunk::Region& region, int x, int y, int z) const noexcept {
+    void Tree::Generate(chunk::Region& region, int x, int y, int z) const noexcept {
         int height = GetTrunkHeight(x, z);
 
         // Build trunk
         for (int i = 0; i < height; i++) {
-            region.SetBlock(x, y + i, z, block::Block::OakLog);
+            region.SetBlock(x, y + i, z, log_block_);
         }
 
         // Build leaves
@@ -56,7 +55,7 @@ namespace voxels::world::feature {
                     }
 
                     if (std::abs(dx) + std::abs(dz) + dy <= 3) {
-                        region.SetBlock(x + dx, y + height + dy, z + dz, block::Block::OakLeaves);
+                        region.SetBlock(x + dx, y + height + dy, z + dz, leaves_block_);
                     }
                 }
             }
