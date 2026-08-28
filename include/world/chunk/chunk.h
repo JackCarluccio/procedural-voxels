@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/mesh.h"
+#include "util/aabb.h"
 #include "world/block/block.h"
 #include "world/chunk/stage.h"
 
@@ -53,6 +54,12 @@ namespace voxels::world::chunk {
 
         std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
         void SetMesh(graphics::Mesh&& mesh) noexcept { mesh_ = std::move(mesh); }
+
+        util::AABB GetAABB() const noexcept {
+            const glm::vec3 min = glm::vec3(position_.x * WIDTH, 0.0f, position_.y * WIDTH);
+            const glm::vec3 max = glm::vec3((position_.x + 1) * WIDTH, HEIGHT, (position_.y + 1) * WIDTH);
+            return util::AABB(min, max);
+        }
 
     private:
         Stage stage_;
