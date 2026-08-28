@@ -11,6 +11,7 @@ namespace voxels::application {
     struct UserSettings {
         bool vsync;
 
+        float camera_fov;
         float camera_speed;
         float camera_sensitivity;
     };

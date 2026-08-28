@@ -122,7 +122,7 @@ namespace voxels::application {
 
     void Application::CreateScene() {
         graphics::Camera camera(
-            glm::radians(45.0f),
+            glm::radians(settings_.user_settings.camera_fov),
             window_->GetAspectRatio(),
             0.1f,
             5000.0f

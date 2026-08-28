@@ -13,6 +13,7 @@ int main() {
 			.user_settings {
 				.vsync = false,
 
+				.camera_fov = 90.0f,
 				.camera_speed = 64.0f,
 				.camera_sensitivity = 0.0015f,
 			}
