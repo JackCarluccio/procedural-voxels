@@ -1,5 +1,6 @@
 # Procedural Voxels
 
+![View of a forest, desert, and mountain biome with a tundra in the distance](/assets/promo/ground_shot_1.png)
 ![Birds-eye view of a 196 chunk render radius](/assets/promo/birds_eye.png)
 
 A highly-performant, infinite, procedurally-generated C++ Minecraft clone with an OpenGL graphics api.
