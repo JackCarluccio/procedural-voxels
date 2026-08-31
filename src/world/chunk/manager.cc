@@ -1,5 +1,6 @@
 #include "world/chunk/manager.h"
 
+#include "graphics/camera.h"
 #include "world/chunk/stage.h"
 
 #include <cmath>
@@ -25,10 +26,10 @@ namespace {
 
 namespace voxels::world::chunk {
 
-    Manager::Manager()
+    Manager::Manager(const graphics::Camera* camera) noexcept
         : generator_(),
         mesher_(),
-        queue_(16)
+        queue_(16, camera)
     {}
 
     void Manager::Init() noexcept {

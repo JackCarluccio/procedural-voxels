@@ -30,7 +30,7 @@ namespace voxels::application {
 
         renderer_ = std::make_unique<graphics::Renderer>();
         input_manager_ = std::make_unique<input::InputManager>(settings_, window_->GetGLFWwindow(), scene_->GetCamera());
-        chunk_manager_ = std::make_unique<world::chunk::Manager>();
+        chunk_manager_ = std::make_unique<world::chunk::Manager>(&scene_->GetCamera());
     }
 
     Application::~Application() {

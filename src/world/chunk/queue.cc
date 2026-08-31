@@ -1,5 +1,9 @@
 #include "world/chunk/queue.h"
 
+#include "graphics/camera.h"
+#include "util/aabb.h"
+#include "util/frustum.h"
+#include "world/chunk/chunk.h"
 #include "world/chunk/manager.h"
 
 #include <algorithm>
@@ -11,10 +15,12 @@
 namespace voxels::world::chunk {
 
     void Queue::Update(const glm::ivec2& chunk_position) noexcept {
-        if (chunk_position == last_chunk_position_) {
+        if (!ShouldRebuild()) {
             return;
         }
         last_chunk_position_ = chunk_position;
+
+        const util::Frustum frustum = camera_->GetFrustum();
 
         int index = 0;
         const int queue_radius_squared = queue_radius_ * queue_radius_;
@@ -22,6 +28,16 @@ namespace voxels::world::chunk {
             for (int y = -queue_radius_; y <= queue_radius_; y++) {
                 int distance = x * x + y * y;
                 if (distance > queue_radius_squared) {
+                    continue;
+                }
+
+                util::AABB chunk_aabb = Chunk::GetAABB(chunk_position + glm::ivec2(x, y));
+                // Expand the AABB since we have two 2 rings of chunk states before chunks can mesh
+                chunk_aabb.min.x -= 2.0f * Chunk::WIDTH;
+                chunk_aabb.min.z -= 2.0f * Chunk::WIDTH;
+                chunk_aabb.max.x += 2.0f * Chunk::WIDTH;
+                chunk_aabb.max.z += 2.0f * Chunk::WIDTH;
+                if (!frustum.ContainsAABB(chunk_aabb)) {
                     continue;
                 }
                 
@@ -42,6 +58,16 @@ namespace voxels::world::chunk {
         size_--;
 
         return Decode(encoded);
+    }
+
+    bool Queue::ShouldRebuild() noexcept {
+        glm::mat4 camera_mat = camera_->GetViewProjectionMatrix();
+        if (camera_mat != last_camera_mat_) {
+            last_camera_mat_ = camera_mat;
+            return true;
+        }
+
+        return false;
     }
 
     void Queue::EnsureRadiusFits() noexcept {

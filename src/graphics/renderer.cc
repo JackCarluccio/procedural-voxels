@@ -5,6 +5,7 @@
 #include "graphics/color.h"
 #include "graphics/mesh.h"
 #include "graphics/shader_program.h"
+#include "util/frustum.h"
 #include "world/chunk/chunk.h"
 
 #include <memory>
@@ -44,24 +45,6 @@ namespace voxels::graphics {
         constexpr int DEPTH = 256;
         constexpr int TILE_SIZE = 16;
 
-        // int width, height, channels;
-        // unsigned char* image_data = stbi_load("assets/textures/texture_atlas.png", &width, &height, &channels, 4);
-
-        // // Splice the atlas into a texture array
-        // int layer = 0;
-        // unsigned char* spliced_data = new unsigned char[width * height * 4];
-        // for (int atlas_y = 0; atlas_y < height; atlas_y += TILE_SIZE) {
-        //     for (int atlas_x = 0; atlas_x < width; atlas_x += TILE_SIZE) {
-        //         for (int i = 0; i < TILE_SIZE; i++) {
-        //             unsigned char* src = image_data + ((atlas_y + i) * width + atlas_x) * 4;
-        //             unsigned char* dst = spliced_data + (layer * TILE_SIZE + i) * TILE_SIZE * 4;
-        //             std::memcpy(dst, src, TILE_SIZE * 4);
-        //         }
-
-        //         layer++;
-        //     }
-        // }
-
         // Create texture array to prevent bleeding between tiles when using mipmaps
         GLuint texture_array_id;
         glGenTextures(1, &texture_array_id);
@@ -85,11 +68,13 @@ namespace voxels::graphics {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const glm::mat4 proj_view = scene.GetCamera().GetProjectionMatrix() * scene.GetCamera().GetViewMatrix();
+        const glm::mat4 proj_view = scene.GetCamera().GetViewProjectionMatrix();
         shader_program->Use();
         shader_program->SetUniformMatrix4x4("proj_view", glm::value_ptr(proj_view));
 
         glBindTexture(GL_TEXTURE_2D, texture_atlas_id);
+
+        const util::Frustum frustum = scene.GetCamera().GetFrustum(proj_view);
 
         for (const auto& [position, chunk] : chunks) {
             auto& chunk_mesh = chunk->GetMesh();
@@ -97,11 +82,17 @@ namespace voxels::graphics {
                 continue;
             }
 
+            const util::AABB aabb = chunk->GetAABB();
+            if (!frustum.ContainsAABB(aabb)) {
+                continue;
+            }
+            
             shader_program->SetUniform2i("chunk_world_position", position.x * world::chunk::Chunk::WIDTH, position.y * world::chunk::Chunk::WIDTH);
-
+            
             chunk_mesh->Bind();
             glDrawElements(GL_TRIANGLES, chunk_mesh->GetIndexCount(), GL_UNSIGNED_SHORT, nullptr);
         }
+
     }
 
 }

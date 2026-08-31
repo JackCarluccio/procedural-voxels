@@ -1,11 +1,12 @@
 #pragma once
 
+#include "graphics/camera.h"
+#include "util/ivec2_hash.h"
 #include "world/chunk/chunk.h"
 #include "world/chunk/generator.h"
 #include "world/chunk/mesher.h"
 #include "world/chunk/queue.h"
 #include "world/chunk/region.h"
-#include "util/ivec2_hash.h"
 
 #include <memory>
 #include <unordered_map>
@@ -13,11 +14,15 @@
 
 #include <glm/glm.hpp>
 
+namespace voxels::graphics {
+    class Camera;
+}
+
 namespace voxels::world::chunk {
 
     class Manager {
     public:
-        Manager();
+        explicit Manager(const graphics::Camera* camera) noexcept;
 
         Manager(Manager&&) = delete;
         Manager& operator=(Manager&&) = delete;

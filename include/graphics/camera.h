@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/frustum.h"
+
 #include <glm/glm.hpp>
 
 namespace voxels::graphics {
@@ -9,17 +11,20 @@ namespace voxels::graphics {
         Camera() = default;
         explicit Camera(float fov, float aspect_ratio, float near_plane, float far_plane);
 
-        glm::mat4 GetViewMatrix() const noexcept;
-        glm::mat4 GetProjectionMatrix() const noexcept;
+        [[nodiscard]] glm::mat4 GetViewMatrix() const noexcept;
+        [[nodiscard]] glm::mat4 GetProjectionMatrix() const noexcept;
+        [[nodiscard]] glm::mat4 GetViewProjectionMatrix() const noexcept { return GetProjectionMatrix() * GetViewMatrix(); };
+        [[nodiscard]] util::Frustum GetFrustum(const glm::mat4& view_proj_mat) const noexcept;
+        [[nodiscard]] util::Frustum GetFrustum() const noexcept;
 
         void SetFov(float fov) noexcept { fov_ = fov; }
         void SetAspectRatio(float aspect_ratio) noexcept { aspect_ratio_ = aspect_ratio; }
         void SetNearPlane(float near_plane) noexcept { near_plane_ = near_plane; }
         void SetFarPlane(float far_plane) noexcept { far_plane_ = far_plane; }
 
-        glm::vec3 GetPosition() const noexcept { return position_; }
-        float GetPitch() const noexcept { return pitch_; }
-        float GetYaw() const noexcept { return yaw_; }
+        [[nodiscard]] glm::vec3 GetPosition() const noexcept { return position_; }
+        [[nodiscard]] float GetPitch() const noexcept { return pitch_; }
+        [[nodiscard]] float GetYaw() const noexcept { return yaw_; }
 
         void SetPosition(const glm::vec3& position) noexcept { position_ = position; }
         void SetPitch(float pitch) noexcept { pitch_ = pitch; }
