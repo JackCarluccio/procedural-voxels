@@ -30,6 +30,12 @@ namespace voxels::world::chunk {
             return z + x * WIDTH + y * WIDTH * WIDTH;
         }
 
+        static constexpr util::AABB GetAABB(const glm::ivec2& position) noexcept {
+            const glm::vec3 min = glm::vec3(position.x * WIDTH, 0.0f, position.y * WIDTH);
+            const glm::vec3 max = glm::vec3((position.x + 1) * WIDTH, HEIGHT, (position.y + 1) * WIDTH);
+            return util::AABB(min, max);
+        }
+
         Chunk() = delete;
         explicit Chunk(const glm::ivec2& position)
             { stage_ = Stage::Empty; position_ = position; };
@@ -55,11 +61,7 @@ namespace voxels::world::chunk {
         std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
         void SetMesh(graphics::Mesh&& mesh) noexcept { mesh_ = std::move(mesh); }
 
-        util::AABB GetAABB() const noexcept {
-            const glm::vec3 min = glm::vec3(position_.x * WIDTH, 0.0f, position_.y * WIDTH);
-            const glm::vec3 max = glm::vec3((position_.x + 1) * WIDTH, HEIGHT, (position_.y + 1) * WIDTH);
-            return util::AABB(min, max);
-        }
+        util::AABB GetAABB() const noexcept { return GetAABB(position_); }
 
     private:
         Stage stage_;

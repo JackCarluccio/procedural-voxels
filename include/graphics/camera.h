@@ -13,6 +13,7 @@ namespace voxels::graphics {
 
         [[nodiscard]] glm::mat4 GetViewMatrix() const noexcept;
         [[nodiscard]] glm::mat4 GetProjectionMatrix() const noexcept;
+        [[nodiscard]] glm::mat4 GetViewProjectionMatrix() const noexcept { return GetProjectionMatrix() * GetViewMatrix(); };
         [[nodiscard]] util::Frustum GetFrustum(const glm::mat4& view_proj_mat) const noexcept;
         [[nodiscard]] util::Frustum GetFrustum() const noexcept;
 

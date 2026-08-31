@@ -75,7 +75,7 @@ namespace voxels::graphics {
     }
 
     util::Frustum Camera::GetFrustum() const noexcept {
-        return GetFrustum(GetProjectionMatrix() * GetViewMatrix());
+        return GetFrustum(GetViewProjectionMatrix());
     }
 
 }

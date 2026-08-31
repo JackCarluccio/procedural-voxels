@@ -68,7 +68,7 @@ namespace voxels::graphics {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const glm::mat4 proj_view = scene.GetCamera().GetProjectionMatrix() * scene.GetCamera().GetViewMatrix();
+        const glm::mat4 proj_view = scene.GetCamera().GetViewProjectionMatrix();
         shader_program->Use();
         shader_program->SetUniformMatrix4x4("proj_view", glm::value_ptr(proj_view));
 
