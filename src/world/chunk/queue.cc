@@ -4,7 +4,6 @@
 #include "util/aabb.h"
 #include "util/frustum.h"
 #include "world/chunk/chunk.h"
-#include "world/chunk/manager.h"
 
 #include <algorithm>
 #include <vector>

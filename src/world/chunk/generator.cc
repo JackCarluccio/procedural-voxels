@@ -76,7 +76,11 @@ namespace voxels::world::chunk {
         void FillChunk(Chunk& chunk, const uint8_t* height_map) noexcept {
             // Since block layout follows [y][x][z], we can fill all blocks up to the minimum terrain height with stone.
             int min_height = *std::min_element(height_map, height_map + Chunk::SLICE_VOLUME);
-            std::memset(chunk.GetBlocksPointer(), static_cast<int>(block::Block::Stone), Chunk::SLICE_VOLUME * (min_height + 1));
+            std::memset(
+                chunk.GetBlocksPointer(),
+                static_cast<int>(block::Block::Stone),
+                Chunk::SLICE_VOLUME * (min_height + 1)
+            );
     
             // Fill all blocks above the minimum terrain height with air.
             std::memset(
