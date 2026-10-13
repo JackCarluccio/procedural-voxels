@@ -17,7 +17,9 @@ namespace voxels::input {
         InputManager(const InputManager&) = delete;
         InputManager& operator=(const InputManager&) = delete;
 
-        bool Update(float delta_time) noexcept;
+        void Update(float delta_time) noexcept;
+
+        bool ShouldClose() const noexcept;
 
     private:
         GLFWwindow* window_;
@@ -29,9 +31,14 @@ namespace voxels::input {
         double last_cursor_x_;
         double last_cursor_y_;
 
-        bool CheckForClosure() const noexcept;
+        bool should_close_ = false;
+
         void ProcessCameraMovement(float delta_time) noexcept;
         void ProcessCameraRotation() noexcept;
+
+        void OnKey(int key, int scancode, int action, int mods) noexcept;
+
+        static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
     };
 
 }

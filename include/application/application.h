@@ -33,9 +33,10 @@ namespace voxels::application {
         void Init();
         void Run();
 
-    private:
-        volatile bool is_running_ = false;
+        graphics::Window& GetWindow() noexcept { return *window_; }
+        input::InputManager& GetInputManager() noexcept { return *input_manager_; }
 
+    private:
         Settings settings_;
 
         int frame_ = 0;
@@ -48,6 +49,7 @@ namespace voxels::application {
         std::unique_ptr<input::InputManager> input_manager_;
         std::unique_ptr<world::chunk::Manager> chunk_manager_;
 
+        
         void Update(float delta_time);
         void Draw();
 

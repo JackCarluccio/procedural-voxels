@@ -34,7 +34,7 @@ Note: The project is configured with strict compiler flags, treating warnings as
 * `Q/SPACE` - to move upwards
 * `E/CTRL` - to move downwards
 * `Mouse Movement` - to look around
-<!-- * `Escape` - to quit -->
+* `Escape` - to quit
 
 ## Architecture
 

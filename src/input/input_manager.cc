@@ -1,5 +1,6 @@
 #include "input/input_manager.h"
 
+#include "application/application.h"
 #include "graphics/camera.h"
 #include "graphics/graphics_core.h"
 
@@ -17,17 +18,17 @@ namespace voxels::input {
 
         glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(window_, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+        glfwSetKeyCallback(window_, key_callback);
     }
 
-    bool InputManager::Update(float delta_time) noexcept {
+    void InputManager::Update(float delta_time) noexcept {
         ProcessCameraMovement(delta_time);
         ProcessCameraRotation();
-
-        return CheckForClosure();
     }
 
-    bool InputManager::CheckForClosure() const noexcept {
-        return glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+    bool InputManager::ShouldClose() const noexcept {
+        return should_close_;
     }
 
     void InputManager::ProcessCameraMovement(float delta_time) noexcept {
@@ -80,6 +81,21 @@ namespace voxels::input {
 
         last_cursor_x_ = cursor_x;
         last_cursor_y_ = cursor_y;
+    }
+
+    void InputManager::OnKey(int key, int scancode, int action, int mods) noexcept {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            should_close_ = true;
+        }
+
+        (void)scancode;
+        (void)mods;
+    }
+
+    void InputManager::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept {
+        auto* app = static_cast<application::Application*>(glfwGetWindowUserPointer(window));
+        InputManager& input_manager = app->GetInputManager();
+        input_manager.OnKey(key, scancode, action, mods);
     }
 
 }

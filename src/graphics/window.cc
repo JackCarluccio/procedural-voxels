@@ -1,5 +1,6 @@
 #include "graphics/window.h"
 
+#include "application/application.h"
 #include "graphics/graphics_core.h"
 
 #include <iostream>
@@ -8,18 +9,17 @@
 
 namespace voxels::graphics {
 
-	Window::Window(int width, int height, const std::string& title, GLFWmonitor* monitor)
+	Window::Window(application::Application* app, int width, int height, const std::string& title, GLFWmonitor* monitor)
 		: width_(width),
 		height_(height),
 		title_(title),
 		window_(glfwCreateWindow(width, height, title_.c_str(), monitor, nullptr))
 	{
-		// Window creation could fail
 		if (window_ == nullptr) {
 			throw std::runtime_error("Failed to create GLFW window");
 		}
 
-		glfwSetWindowUserPointer(window_, this);
+		glfwSetWindowUserPointer(window_, app);
 		glfwSetFramebufferSizeCallback(window_, framebuffer_size_callback);
 	}
 
@@ -34,11 +34,6 @@ namespace voxels::graphics {
 		window_(other.window_)
 	{
 		other.window_ = nullptr;
-
-		if (window_) {
-			glfwSetWindowUserPointer(window_, this);
-		}
-
 	}
 
 	Window& Window::operator=(Window&& other) noexcept {
@@ -55,10 +50,6 @@ namespace voxels::graphics {
 
 		other.window_ = nullptr;
 
-		if (window_) {
-			glfwSetWindowUserPointer(window_, this);
-		}
-
 		return *this;
 	}
 
@@ -66,25 +57,24 @@ namespace voxels::graphics {
 		glfwMakeContextCurrent(window_);
 	}
 
+	void Window::SwapBuffers() noexcept {
+		glfwSwapBuffers(window_);
+	}
+	
 	bool Window::ShouldClose() const noexcept {
 		return glfwWindowShouldClose(window_);
 	}
 
-	void Window::SwapBuffers() noexcept {
-		glfwSwapBuffers(window_);
-	}
-
-	bool Window::HasChangedSize() noexcept {
+	bool Window::HarvestHasChangedSize() noexcept {
 		bool changed = hasChangedSize_;
 		hasChangedSize_ = false;
 		return changed;
 	}
 
 	void Window::framebuffer_size_callback(GLFWwindow* handle, int width, int height) noexcept {
-		Window* window = static_cast<Window*>(glfwGetWindowUserPointer(handle));
-		if (window) {
-			window->OnResize(width, height);
-		}
+		auto* app = static_cast<application::Application*>(glfwGetWindowUserPointer(handle));
+		Window& window = app->GetWindow();
+		window.OnResize(width, height);
 	}
 
 	void Window::OnResize(int width, int height) noexcept {

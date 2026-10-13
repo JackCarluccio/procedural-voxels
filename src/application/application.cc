@@ -47,8 +47,11 @@ namespace voxels::application {
     }
 
     void Application::Run() {
-        is_running_ = true;
-        while (is_running_ && !window_->ShouldClose()) {
+        while (true) {
+            if (window_->ShouldClose() || input_manager_->ShouldClose()) {
+                break;
+            }
+
             std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
             float delta_time = static_cast<float>((now - last_frame_time_).count()) * 1e-9f;
             
@@ -58,14 +61,12 @@ namespace voxels::application {
             Update(delta_time);
             Draw();
         }
-
-        is_running_ = false;
     }
 
     void Application::Update(float delta_time) {
         glfwPollEvents();
         
-        if (window_->HasChangedSize()) {
+        if (window_->HarvestHasChangedSize()) {
             scene_->GetCamera().SetAspectRatio(window_->GetAspectRatio());
         }
 
@@ -105,6 +106,7 @@ namespace voxels::application {
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
         window_ = std::make_unique<graphics::Window>(
+            this,
             mode->width,
             mode->height,
             settings_.app_settings.title,

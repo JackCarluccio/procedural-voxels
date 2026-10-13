@@ -5,11 +5,17 @@
 struct GLFWwindow;
 struct GLFWmonitor;
 
+namespace voxels::application {
+
+	class Application;
+
+}
+
 namespace voxels::graphics {
 
 	class Window {
 	public:
-		explicit Window(int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
+		explicit Window(application::Application* app, int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
 		~Window();
 
 		Window(const Window&) = delete;
@@ -18,10 +24,10 @@ namespace voxels::graphics {
 		Window& operator=(Window&& other) noexcept;
 
 		void MakeContextCurrent() noexcept;
-		bool ShouldClose() const noexcept;
 		void SwapBuffers() noexcept;
+		bool ShouldClose() const noexcept;
 
-		bool HasChangedSize() noexcept;
+		bool HarvestHasChangedSize() noexcept;
 
 		int GetWidth() const noexcept { return width_; }
 		int GetHeight() const noexcept { return height_; }
