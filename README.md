@@ -65,7 +65,7 @@ main.cc
 #### Game Loop
 
 ```cpp
-while (is_running_ && !window_->ShouldClose()) {
+while (!window_->ShouldClose() && !input_manager_->ShouldClose()) {
 
   1. Application::Update()
     2. glfwPollEvents();
@@ -73,18 +73,17 @@ while (is_running_ && !window_->ShouldClose()) {
     4. input_manager_->Update();
       5. ProcessCameraMovement();
       6. ProcessCameraRotation();
-      7. CheckForClosure();
-    8. chunk_manager_->Update();
-      9. chunk_queue_.Update();
-      10. GenerateChunks();
-  11. Application::Draw();
-    12. Renderer::Draw();
-      13. glClear();
-      14. shader_program->Use();
-      15. glBindTexture();
-      16. chunk_mesh->Bind();
-      17. glDrawElements();
-    18. Window::SwapBuffers();
+    7. chunk_manager_->Update();
+      8. chunk_queue_.Update();
+      9. GenerateChunks();
+  10. Application::Draw();
+    11. Renderer::Draw();
+      12. glClear();
+      13. shader_program->Use();
+      14. glBindTexture();
+      15. chunk_mesh->Bind();
+      16. glDrawElements();
+    17. Window::SwapBuffers();
 
 }
 ```
