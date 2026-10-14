@@ -40,14 +40,11 @@ namespace voxels::world::generation::hash {
     }
 
     inline uint32_t FeatureHash(int x, int y) noexcept {
-        constexpr int PRIME1 = 198491317;
-        return Hash(static_cast<uint32_t>(x + PRIME1 * y), FeatureSeed());
+        return Hash(static_cast<uint32_t>(y), FeatureHash(x));
     }
 
     inline uint32_t FeatureHash(int x, int y, int z) noexcept {
-        constexpr int PRIME1 = 198491317;
-        constexpr int PRIME2 = 6542989;
-        return Hash(static_cast<uint32_t>(x + PRIME1 * y + PRIME2 * z), FeatureSeed());
+        return Hash(static_cast<uint32_t>(z), FeatureHash(x, y));
     }
 
 }
