@@ -7,8 +7,9 @@ namespace voxels::world::feature {
 
     namespace {
 
-        int GetCactusHeight(int x, int z) noexcept {
-            return 1 + static_cast<int>(generation::hash::FeatureHash(x, z) % 4);
+        int GetCactusHeight(const chunk::Chunk& chunk, int x, int z) noexcept {
+            uint32_t hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), z + chunk.GetWorldZ());
+            return 1 + static_cast<int>(hash % 4);
         }
 
         bool CanPlaceCactusBlock(const chunk::Region& region, int x, int y, int z) noexcept {
@@ -22,13 +23,13 @@ namespace voxels::world::feature {
 
     }
 
-    bool Cactus::CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept {
+    bool Cactus::CanGenerate(const chunk::Region& region, const chunk::Chunk& /*chunk*/, int x, int y, int z) const noexcept {
         return CanPlaceCactusBlock(region, x, y, z)
             && y > 0 && region.GetBlock(x, y - 1, z) == block::Block::Sand;
     }
 
-    void Cactus::Generate(chunk::Region& region, int x, int y, int z) const noexcept {
-        int height = GetCactusHeight(x, z);
+    void Cactus::Generate(chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept {
+        int height = GetCactusHeight(chunk, x, z);
         for (int i = 0; i < height; ++i) {
             if (!CanPlaceCactusBlock(region, x, y + i, z)) {
                 break;

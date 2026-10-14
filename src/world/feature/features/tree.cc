@@ -8,14 +8,15 @@ namespace voxels::world::feature {
 
     namespace {
 
-        int GetTrunkHeight(int x, int z) noexcept {
-            return static_cast<int>(generation::hash::FeatureHash(x, z) % 4 + 2);
+        int GetTrunkHeight(const chunk::Chunk& chunk, int x, int z) noexcept {
+            int hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), z + chunk.GetWorldZ());
+            return 2 + static_cast<int>(hash % 4);
         }
 
     }
 
-    bool Tree::CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept {
-        int height = GetTrunkHeight(x, z);
+    bool Tree::CanGenerate(const chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept {
+        int height = GetTrunkHeight(chunk, x, z);
 
         // All blocks in the trunk must be air
         for (int i = 0; i < height; i++) {
@@ -38,8 +39,8 @@ namespace voxels::world::feature {
         return true;
     }
 
-    void Tree::Generate(chunk::Region& region, int x, int y, int z) const noexcept {
-        int height = GetTrunkHeight(x, z);
+    void Tree::Generate(chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept {
+        int height = GetTrunkHeight(chunk, x, z);
 
         // Build trunk
         for (int i = 0; i < height; i++) {
