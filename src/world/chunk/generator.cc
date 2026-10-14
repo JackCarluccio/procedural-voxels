@@ -4,8 +4,10 @@
 #include "world/biome/biome.h"
 #include "world/biome/biome_data.h"
 #include "world/block/block.h"
+#include "world/generation/hash.h"
 #include "world/generation/linear_spline.h"
 #include "world/generation/perlin_noise_2d.h"
+#include "world/generation/squirrel_rng.h"
 
 #include <algorithm>
 #include <cmath>
@@ -130,9 +132,10 @@ namespace voxels::world::chunk {
             const Chunk& chunk,
             const uint8_t* height_map,
             const biome::Biome* biome_map,
-            const std::vector<biome::Biome>& biomes,
-            std::mt19937& rng
+            const std::vector<biome::Biome>& biomes
         ) noexcept {
+            generation::SquirrelRNG rng(util::IVec2Hash{}(chunk.GetPosition()));
+
             for (auto biome : biomes) {
                 const auto& feature_commands = biome::biome_data[static_cast<int>(biome)].feature_commands;
                 for (const auto& command : feature_commands) {
@@ -169,9 +172,6 @@ namespace voxels::world::chunk {
     }
 
     void Generator::Decorate(Chunk& chunk, Region& region) const noexcept {
-        std::mt19937 rng;
-        rng.seed(util::IVec2Hash{}(chunk.GetPosition()));
-
         alignas(64) uint8_t height_map[Chunk::SLICE_VOLUME];
         GenerateHeightMap(chunk, height_map);
         
@@ -181,7 +181,7 @@ namespace voxels::world::chunk {
         DecorateSurfaceBlocks(chunk, height_map, biome_map);
 
         const auto unique_biomes = GetUniqueBiomes(biome_map);
-        DecorateFeatures(region, chunk, height_map, biome_map, unique_biomes, rng);
+        DecorateFeatures(region, chunk, height_map, biome_map, unique_biomes);
     }
 
 }
