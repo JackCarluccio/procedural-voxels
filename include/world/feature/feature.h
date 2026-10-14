@@ -1,5 +1,6 @@
 #pragma once
 
+#include "world/chunk/chunk.h"
 #include "world/chunk/region.h"
 
 namespace voxels::world::feature {
@@ -8,8 +9,8 @@ namespace voxels::world::feature {
     public:
         virtual ~Feature() = default;
 
-        virtual bool CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept = 0;
-        virtual void Generate(chunk::Region& region, int x, int y, int z) const noexcept = 0;
+        [[nodiscard]] virtual bool CanGenerate(const chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept = 0;
+        virtual void Generate(chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept = 0;
 
     };
 

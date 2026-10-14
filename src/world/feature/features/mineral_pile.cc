@@ -19,12 +19,14 @@ namespace voxels::world::feature {
             block::Block::Granite
         };
 
-        block::Block GetRandomMineral(int x, int y, int z) noexcept {
-            return mineral_blocks[generation::hash::FeatureHash(x, y, z) % mineral_blocks.size()];
+        block::Block GetRandomMineral(const chunk::Chunk& chunk, int x, int y, int z) noexcept {
+            uint32_t hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), y, z + chunk.GetWorldZ());
+            return mineral_blocks[static_cast<int>(hash % mineral_blocks.size())];
         }
 
-        int GetBlockCount(int x, int z) noexcept {
-            return 3 + static_cast<int>(generation::hash::FeatureHash(x, z) % 30);
+        int GetBlockCount(const chunk::Chunk& chunk, int x, int z) noexcept {
+            uint32_t hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), z + chunk.GetWorldZ());
+            return 3 + static_cast<int>(hash % 30);
         }
 
         struct Location {
@@ -59,12 +61,12 @@ namespace voxels::world::feature {
 
     }
 
-    bool MineralPile::CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept {
+    bool MineralPile::CanGenerate(const chunk::Region& region, const chunk::Chunk& /*chunk*/, int x, int y, int z) const noexcept {
         return IsValidLocation(region, x, y, z);
     }
 
-    void MineralPile::Generate(chunk::Region& region, int x, int y, int z) const noexcept {
-        int blocks = GetBlockCount(x, z);
+    void MineralPile::Generate(chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept {
+        int blocks = GetBlockCount(chunk, x, z);
         std::vector<Location> locations;
         locations.reserve(blocks * 5);
         locations.push_back({x, y, z});
@@ -75,7 +77,7 @@ namespace voxels::world::feature {
                 continue;
             }
 
-            block::Block mineral = GetRandomMineral(location.x, location.y, location.z);
+            block::Block mineral = GetRandomMineral(chunk, location.x, location.y, location.z);
             region.SetBlock(location.x, location.y, location.z, mineral);
 
             blocks--;

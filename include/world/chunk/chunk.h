@@ -45,23 +45,27 @@ namespace voxels::world::chunk {
         Chunk(Chunk&&) = delete;
         Chunk& operator=(Chunk&&) = delete;
 
-        Stage GetStage() const noexcept { return stage_; }
+        [[nodiscard]] Stage GetStage() const noexcept { return stage_; }
         void SetStage(Stage stage) noexcept { stage_ = stage; }
 
-        block::Block GetBlock(int index) const noexcept { return blocks_[index]; }
-        block::Block GetBlock(int x, int y, int z) const noexcept { return GetBlock(ToIndex(x, y, z)); }
+        [[nodiscard]] block::Block GetBlock(int index) const noexcept { return blocks_[index]; }
+        [[nodiscard]] block::Block GetBlock(int x, int y, int z) const noexcept { return GetBlock(ToIndex(x, y, z)); }
 
         void SetBlock(int index, block::Block block) noexcept { blocks_[index] = block; }
         void SetBlock(int x, int y, int z, block::Block block) noexcept { SetBlock(ToIndex(x, y, z), block); }
 
-        block::Block* GetBlocksPointer() noexcept { return blocks_.data(); }
+        [[nodiscard]] block::Block* GetBlocksPointer() noexcept { return blocks_.data(); }
 
-        glm::ivec2 GetPosition() const noexcept { return position_; }
+        [[nodiscard]] glm::ivec2 GetPosition() const noexcept { return position_; }
+        [[nodiscard]] int GetX() const noexcept { return position_.x; }
+        [[nodiscard]] int GetZ() const noexcept { return position_.y; }
+        [[nodiscard]] int GetWorldX() const noexcept { return position_.x * WIDTH; }
+        [[nodiscard]] int GetWorldZ() const noexcept { return position_.y * WIDTH; }
 
-        std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
+        [[nodiscard]] std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
         void SetMesh(graphics::Mesh&& mesh) noexcept { mesh_ = std::move(mesh); }
 
-        util::AABB GetAABB() const noexcept { return GetAABB(position_); }
+        [[nodiscard]] util::AABB GetAABB() const noexcept { return GetAABB(position_); }
 
     private:
         Stage stage_;

@@ -127,6 +127,7 @@ namespace voxels::world::chunk {
 
         void DecorateFeatures(
             Region& region,
+            const Chunk& chunk,
             const uint8_t* height_map,
             const biome::Biome* biome_map,
             const std::vector<biome::Biome>& biomes,
@@ -147,8 +148,8 @@ namespace voxels::world::chunk {
                         }
 
                         int y = height_map[z + x * Chunk::WIDTH] + 1;
-                        if (command.feature->CanGenerate(region, x, y, z)) {
-                            command.feature->Generate(region, x, y, z);
+                        if (command.feature->CanGenerate(region, chunk, x, y, z)) {
+                            command.feature->Generate(region, chunk, x, y, z);
                         }
                     }
                 }
@@ -180,7 +181,7 @@ namespace voxels::world::chunk {
         DecorateSurfaceBlocks(chunk, height_map, biome_map);
 
         const auto unique_biomes = GetUniqueBiomes(biome_map);
-        DecorateFeatures(region, height_map, biome_map, unique_biomes, rng);
+        DecorateFeatures(region, chunk, height_map, biome_map, unique_biomes, rng);
     }
 
 }

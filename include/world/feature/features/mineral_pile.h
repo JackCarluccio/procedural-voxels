@@ -6,8 +6,8 @@ namespace voxels::world::feature {
 
     class MineralPile : public Feature {
     public:
-        bool CanGenerate(const chunk::Region& region, int x, int y, int z) const noexcept override;
-        void Generate(chunk::Region& region, int x, int y, int z) const noexcept override;
+        [[nodiscard]] bool CanGenerate(const chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept override;
+        void Generate(chunk::Region& region, const chunk::Chunk& chunk, int x, int y, int z) const noexcept override;
     };  
 
 }
