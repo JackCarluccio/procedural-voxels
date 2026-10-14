@@ -35,6 +35,11 @@ namespace voxels::world::generation::hash {
         return mangledBits;
     }
 
+    // Hashes a chunk position
+    inline uint32_t ChunkHash(int x, int z) noexcept {
+        return Hash(static_cast<uint32_t>(z), Hash(static_cast<uint32_t>(x), WORLD_SEED));
+    }
+
     inline uint32_t FeatureHash(int x) noexcept {
         return Hash(static_cast<uint32_t>(x), FeatureSeed());
     }

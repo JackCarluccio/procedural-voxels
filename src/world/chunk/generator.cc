@@ -1,6 +1,5 @@
 #include "world/chunk/generator.h"
 
-#include "util/ivec2_hash.h"
 #include "world/biome/biome.h"
 #include "world/biome/biome_data.h"
 #include "world/block/block.h"
@@ -134,7 +133,7 @@ namespace voxels::world::chunk {
             const biome::Biome* biome_map,
             const std::vector<biome::Biome>& biomes
         ) noexcept {
-            generation::SquirrelRNG rng(util::IVec2Hash{}(chunk.GetPosition()));
+            generation::SquirrelRNG rng(generation::hash::ChunkHash(chunk.GetX(), chunk.GetZ()));
 
             for (auto biome : biomes) {
                 const auto& feature_commands = biome::biome_data[static_cast<int>(biome)].feature_commands;

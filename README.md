@@ -315,6 +315,7 @@ Because of the `Decorated` and `Meshed` stages, there are two invisible rings of
 **Hashing Algorithms** are stateless, deterministic, pseudo-random number generators with any number of inputs. A good hash function will flip half its output bits when a single input bit changes. Their stateless nature is essential for random access generation.
 * Note: While it's possible to instance a standard random number engine, such as `std::mt19937`, just to produce one value, the construction costs are typically very expensive making this impractical.
 * **Squirrel Noise 5** is fast, lightweight, and specifically optimized for procedural generation. Thus, it's the primary hashing algorithm used for generation.
+  * Note: My specific implementation hashes each input number together instead of a linear combination. While more expensive, it eliminates the sequence repetition weakness of linear combinations.
 
 **Splines** are "special functions defined piecewise by polynomials." Rather than having the outputs from our Perlin noise directly affect the terrain height, we plug the results into a linear spline. This allows us to create more advanced terrain, such as plateaus.
   * Note: Plateaus can be accomplished by defining an interval with constant height, such as `{x=0.8, y=1.4}, {x=1.0, y=1.4}`.
@@ -337,11 +338,12 @@ Because of the `Decorated` and `Meshed` stages, there are two invisible rings of
 2. For each of these unique biomes, and for each of the features that can spawn within them, as defined by their settings, the quantity to place, n, is calculated from a `std::poisson_distribution<int>(settings.average_count)`.
    1. Using a poisson distribution allows for dense and sparse regions of features, since some chunks may have 0 of that feature, and others may have many more than the average count.
    2. More naive approaches would involve a simple for-loop and always place the same quantity of the feature within one chunk, leading to a less-natural looking world.
-3. Next, n times, the x-z position is generated from a `mersenne-twister engine (std::mt19937)`. If this position is not within the biome it originated from, checked by the biome map, the feature is not placed.
+3. Next, n times, the x-z position is generated from a custom `SquirrelRNG`. If this position is not within the biome it originated from, checked by the biome map, the feature is not placed.
    1. The y position is looked up in the height map, which is regenerated during the decoration phase, since height map generation is so cheap.
       1. Note: The height map could be stored within the chunk, using `16 x 16 x sizeof(uint8_t) = 256 bytes`, but considering it's only used during shaping and decorating, storing it permanently would be a waste of memory.
    2. Checking against the biome map ensures features won't be found outside their natural habitat along biome boundaries. Without this, chunk boundaries along biome boundaries would be visible when viewed from a distance.
-   3. By not attempting to re-place the feature, if one biome only covers 20% of a chunk, only 20% of its features will be placed, on average
+   3. By not attempting to re-place the feature, if one biome only covers 20% of a chunk, only 20% of its features will be placed, on average.
+   4. SquirrelRNG is a simple random number generator based off SquirrelNoise5 with very little construction cost at the cost of slightly worse statistical guarantees, though this doesn't matter for procedural generation.
 4. Before placing the feature, we must ensure it can fit. Every feature has a CanGenerate(location) method. As long as this method returns true, the feature is finally placed.
    1. Note: Most features check a subset of the locations blocks would be placed in during its generation.
    2. Note: Most features don't allow their blocks to override solid blocks. That way, trees, for example, won't carve into mountains.
