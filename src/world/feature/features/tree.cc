@@ -9,7 +9,7 @@ namespace voxels::world::feature {
     namespace {
 
         int GetTrunkHeight(const chunk::Chunk& chunk, int x, int z) noexcept {
-            int hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), z + chunk.GetWorldZ());
+            uint32_t hash = generation::hash::FeatureHash(x + chunk.GetWorldX(), z + chunk.GetWorldZ());
             return 2 + static_cast<int>(hash % 4);
         }
 
