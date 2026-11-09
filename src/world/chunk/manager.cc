@@ -3,6 +3,7 @@
 #include "graphics/camera.h"
 #include "world/chunk/stage.h"
 
+#include <algorithm>
 #include <cmath>
 #include <tuple>
 #include <utility>
@@ -10,6 +11,9 @@
 #include <glm/vec2.hpp>
 
 namespace {
+
+    constexpr int RENDER_RADIUS = 16;
+    constexpr int OPERATIONS_PER_UPDATE = 8;
 
     constexpr glm::ivec2 CHUNK_OFFSETS[8] = {
         glm::ivec2( 1,  0),
@@ -29,7 +33,7 @@ namespace voxels::world::chunk {
     Manager::Manager(const graphics::Camera* camera) noexcept
         : generator_(),
         mesher_(),
-        queue_(16, camera)
+        queue_(RENDER_RADIUS, camera)
     {}
 
     void Manager::Init() noexcept {
@@ -37,15 +41,39 @@ namespace voxels::world::chunk {
     }
 
     void Manager::Update(const glm::vec3& player_position) noexcept {
-        glm::ivec2 player_chunk_position = glm::ivec2(
+        const glm::ivec2 player_chunk_position = glm::ivec2(
             static_cast<int>(std::floor(player_position.x / Chunk::WIDTH)),
             static_cast<int>(std::floor(player_position.z / Chunk::WIDTH))
         );
 
         queue_.Update(player_chunk_position);
+        DeleteChunks(player_chunk_position);
+        CreateChunks();
+    }
 
+    Region Manager::GetRegion(const glm::ivec2& position) noexcept {
+        return Region({{
+            {{
+                chunks_.find(position + glm::ivec2(-1, -1))->second.get(),
+                chunks_.find(position + glm::ivec2(-1, 0 ))->second.get(),
+                chunks_.find(position + glm::ivec2(-1, 1 ))->second.get(),
+            }},
+            {{
+                chunks_.find(position + glm::ivec2( 0, -1))->second.get(), 
+                chunks_.find(position                     )->second.get(),
+                chunks_.find(position + glm::ivec2( 0, 1 ))->second.get(),
+            }},
+            {{
+                chunks_.find(position + glm::ivec2( 1, -1))->second.get(),
+                chunks_.find(position + glm::ivec2( 1, 0 ))->second.get(),
+                chunks_.find(position + glm::ivec2( 1, 1 ))->second.get(),
+            }},
+        }});
+    }
+
+    void Manager::CreateChunks() noexcept {
         int operations = 0;
-        while (operations < 8) {
+        while (operations < OPERATIONS_PER_UPDATE) {
             if (!chunks_to_mesh_.empty()) {
                 Chunk* chunk = chunks_to_mesh_.back();
                 chunks_to_mesh_.pop_back();
@@ -73,26 +101,6 @@ namespace voxels::world::chunk {
                 break;
             }
         }
-    }
-
-    Region Manager::GetRegion(const glm::ivec2& position) noexcept {
-        return Region({{
-            {{
-                chunks_.find(position + glm::ivec2(-1, -1))->second.get(),
-                chunks_.find(position + glm::ivec2(-1, 0 ))->second.get(),
-                chunks_.find(position + glm::ivec2(-1, 1 ))->second.get(),
-            }},
-            {{
-                chunks_.find(position + glm::ivec2( 0, -1))->second.get(), 
-                chunks_.find(position                     )->second.get(),
-                chunks_.find(position + glm::ivec2( 0, 1 ))->second.get(),
-            }},
-            {{
-                chunks_.find(position + glm::ivec2( 1, -1))->second.get(),
-                chunks_.find(position + glm::ivec2( 1, 0 ))->second.get(),
-                chunks_.find(position + glm::ivec2( 1, 1 ))->second.get(),
-            }},
-        }});
     }
 
     void Manager::GenerateChunk(const glm::ivec2& position) noexcept {
@@ -181,5 +189,85 @@ namespace voxels::world::chunk {
 
         return true;
     }
-    
+
+    void Manager::DeleteChunks(const glm::ivec2& player_chunk_position) noexcept {
+        // Traveling in axis-unaligned directions will alternate player chunk positions perpendicular to direction
+        // Causing excess deletion. Add a slight buffer to minimize this effect.
+        int threshold = (RENDER_RADIUS + 1) * (RENDER_RADIUS + 1);
+
+        for (auto it = chunks_.begin(); it != chunks_.end();) {
+            auto& position = it->first;
+            int dx = position.x - player_chunk_position.x;
+            int dz = position.y - player_chunk_position.y;
+            if (dx * dx + dz * dz > threshold) {
+                it = DeleteChunk(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
+    Manager::ChunkMap::iterator Manager::DeleteChunk(ChunkMap::iterator it) noexcept {
+        Chunk& chunk = *it->second;
+        RemoveChunkFromDecorateQueue(&chunk);
+        RemoveChunkFromMeshQueue(&chunk);
+        DowngradeNeighbors(chunk, Stage::Shaped);
+        return chunks_.erase(it);
+    }
+
+    void Manager::RemoveChunkFromDecorateQueue(Chunk* chunk) noexcept {
+        auto it = std::ranges::find(chunks_to_decorate_, chunk);
+        if (it != chunks_to_decorate_.end()) {
+            chunks_to_decorate_.erase(it);
+        }
+    }
+
+    void Manager::RemoveChunkFromMeshQueue(Chunk* chunk) noexcept {
+        auto it = std::ranges::find(chunks_to_mesh_, chunk);
+        if (it != chunks_to_mesh_.end()) {
+            chunks_to_mesh_.erase(it);
+        }
+    }
+
+    void Manager::DowngradeNeighbors(Chunk& chunk, Stage max_stage) noexcept {
+        for (const auto& offset : CHUNK_OFFSETS) {
+            auto it = chunks_.find(chunk.GetPosition() + offset);
+            if (it == chunks_.end()) {
+                continue;
+            }
+
+            bool downgraded = Downgrade(*it->second, max_stage);
+            if (downgraded) {
+                DowngradeNeighbors(*it->second, NextStage(max_stage));
+            }
+        }
+    }
+
+    bool Manager::Downgrade(Chunk& chunk, Stage max_stage) noexcept {
+        Stage stage = chunk.GetStage();
+
+        // If Downgrade() is called on a chunk, its because one of its 8 neighbors have been downgraded.
+        // That means this chunk no longer meets the requirements to advance to its next stage.
+        // So, remove it from any processing queues regardless if we're actually downgrading this chunk
+        if (stage == Stage::Decorated) {
+            RemoveChunkFromMeshQueue(&chunk);
+        } else if (stage == Stage::Shaped) {
+            RemoveChunkFromDecorateQueue(&chunk);
+        }
+
+        if (stage <= max_stage) {
+            return false;
+        }
+
+        chunk.DeleteMesh(); // Safe to call regardless if the mesh exists
+
+        if (max_stage < Stage::Decorated) {
+            // Remove decorations by re-shaping the chunk
+            generator_.Shape(chunk);
+        }
+
+        chunk.SetStage(max_stage);
+        return true;
+    }
+
 }

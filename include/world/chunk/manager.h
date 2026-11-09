@@ -22,6 +22,8 @@ namespace voxels::world::chunk {
 
     class Manager {
     public:
+        typedef std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash> ChunkMap;
+
         explicit Manager(const graphics::Camera* camera) noexcept;
 
         Manager(Manager&&) = delete;
@@ -45,12 +47,10 @@ namespace voxels::world::chunk {
         Region GetRegion(const glm::ivec2& position) noexcept;
         Region GetRegion(const Chunk& chunk) noexcept { return GetRegion(chunk.GetPosition()); }
 
-        const std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash>& GetMap() noexcept {
-            return chunks_;
-        };
+        const ChunkMap& GetMap() noexcept { return chunks_; };
 
     private:
-        std::unordered_map<glm::ivec2, std::unique_ptr<Chunk>, voxels::util::IVec2Hash> chunks_;
+        ChunkMap chunks_;
         std::vector<Chunk*> chunks_to_decorate_;
         std::vector<Chunk*> chunks_to_mesh_;
 
@@ -58,6 +58,7 @@ namespace voxels::world::chunk {
         Mesher mesher_;
         Queue queue_;
 
+        void CreateChunks() noexcept;
         void GenerateChunk(const glm::ivec2& position) noexcept;
         void ShapeChunk(Chunk& chunk) noexcept;
         void DecorateChunk(Chunk& chunk) noexcept;
@@ -65,6 +66,13 @@ namespace voxels::world::chunk {
 
         bool IsDecoratable(const Chunk& chunk) const noexcept;
         bool IsMeshable(const Chunk& chunk) const noexcept;
+        
+        void DeleteChunks(const glm::ivec2& player_chunk_position) noexcept;
+        ChunkMap::iterator DeleteChunk(ChunkMap::iterator it) noexcept;
+        void RemoveChunkFromDecorateQueue(Chunk* chunk) noexcept;
+        void RemoveChunkFromMeshQueue(Chunk* chunk) noexcept;
+        void DowngradeNeighbors(Chunk& chunk, Stage max_stage) noexcept;
+        bool Downgrade(Chunk& chunk, Stage max_stage) noexcept;
     };
 
 }
