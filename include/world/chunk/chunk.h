@@ -64,6 +64,7 @@ namespace voxels::world::chunk {
 
         [[nodiscard]] std::optional<graphics::Mesh>& GetMesh() noexcept { return mesh_; }
         void SetMesh(graphics::Mesh&& mesh) noexcept { mesh_ = std::move(mesh); }
+        void DeleteMesh() noexcept { mesh_.reset(); }
 
         [[nodiscard]] util::AABB GetAABB() const noexcept { return GetAABB(position_); }
 
