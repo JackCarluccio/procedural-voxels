@@ -67,23 +67,24 @@ main.cc
 ```cpp
 while (!window_->ShouldClose() && !input_manager_->ShouldClose()) {
 
-  1. Application::Update()
-    2. glfwPollEvents();
-    3. window_->HasChangedSize();
-    4. input_manager_->Update();
-      5. ProcessCameraMovement();
-      6. ProcessCameraRotation();
-    7. chunk_manager_->Update();
-      8. chunk_queue_.Update();
-      9. GenerateChunks();
-  10. Application::Draw();
-    11. Renderer::Draw();
-      12. glClear();
-      13. shader_program->Use();
-      14. glBindTexture();
-      15. chunk_mesh->Bind();
-      16. glDrawElements();
-    17. Window::SwapBuffers();
+  - Application::Update()
+    - glfwPollEvents();
+    - window_->HasChangedSize();
+    - input_manager_->Update();
+      - ProcessCameraMovement();
+      - ProcessCameraRotation();
+    - chunk_manager_->Update();
+      - chunk_queue_.Update();
+      - DeleteChunks();
+      - GenerateChunks();
+  - Application::Draw();
+    - Renderer::Draw();
+      - glClear();
+      - shader_program->Use();
+      - glBindTexture();
+      - chunk_mesh->Bind();
+      - glDrawElements();
+    - Window::SwapBuffers();
 
 }
 ```
