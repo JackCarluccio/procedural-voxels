@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <glm/glm.hpp>
+#include <glm/vec2.hpp>
 
 namespace voxels::graphics {
     class Camera;
@@ -53,6 +54,7 @@ namespace voxels::world::chunk {
         ChunkMap chunks_;
         std::vector<Chunk*> chunks_to_decorate_;
         std::vector<Chunk*> chunks_to_mesh_;
+        glm::ivec2 last_chunk_position_;
 
         Generator generator_;
         Mesher mesher_;

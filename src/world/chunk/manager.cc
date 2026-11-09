@@ -49,6 +49,8 @@ namespace voxels::world::chunk {
         queue_.Update(player_chunk_position);
         DeleteChunks(player_chunk_position);
         CreateChunks();
+
+        last_chunk_position_ = player_chunk_position;
     }
 
     Region Manager::GetRegion(const glm::ivec2& position) noexcept {
@@ -191,6 +193,10 @@ namespace voxels::world::chunk {
     }
 
     void Manager::DeleteChunks(const glm::ivec2& player_chunk_position) noexcept {
+        if (player_chunk_position == last_chunk_position_) {
+            return;
+        }
+
         // Traveling in axis-unaligned directions will alternate player chunk positions perpendicular to direction
         // Causing excess deletion. Add a slight buffer to minimize this effect.
         int threshold = (RENDER_RADIUS + 1) * (RENDER_RADIUS + 1);
